@@ -1,5 +1,52 @@
 import kando.schema as kando
 import kando.utils as utils
+import mindwm.ssh as ssh
+
+
+schema Ip4:
+  ip: str
+  state?: str
+  country?: str
+  org?: str
+  city?: str
+  ssh?: str
+
+country_icon = lambda x -> any {
+  if (x.country):
+    state = {
+      icon = country_flag[x.country]
+      iconTheme = "emoji"
+    }
+  state
+}
+
+makeMenu = lambda ip -> kando.Child {
+  {
+    name = ip.ip + ""
+    children = [
+      utils.insertText({
+        name = "ping"
+        cmd = "ping ${ip.ip}"
+      })
+      utils.insertText({
+        name = "traceroute"
+        cmd = "traceroute -n -q1 ${ip.ip}"
+      })
+      if ip.org:
+        utils.showEmoji(
+          title = ip.org
+          emoji = "📡"
+        )
+      if ip.city:
+        utils.showEmoji(
+          title = ip.city
+          emoji = "🏙️"
+        )
+      if (ip.ssh):
+        ssh.sshMenu(ip.ssh)
+    ]
+  } | country_icon(ip)
+}
 
 country_flag = {
     "AD": "🇦🇩", "AE": "🇦🇪", "AF": "🇦🇫", "AG": "🇦🇬", "AI": "🇦🇮",
@@ -90,47 +137,4 @@ country_flag = {
     "YE": "🇾🇪", "YT": "🇾🇹",
 
     "ZA": "🇿🇦", "ZM": "🇿🇲", "ZW": "🇿🇼",
-}
-
-
-schema Ip4:
-  ip: str
-  state?: str
-  country?: str
-  org?: str
-  city?: str
-
-country_icon = lambda x -> any {
-  if (x.country):
-    state = {
-      icon = country_flag[x.country]
-      iconTheme = "emoji"
-    }
-  state
-}
-
-makeMenu = lambda ip -> kando.Child {
-  {
-    name = ip.ip + ""
-    children = [
-      utils.insertText({
-        name = "ping"
-        cmd = "ping ${ip.ip}"
-      })
-      utils.insertText({
-        name = "traceroute"
-        cmd = "traceroute -n -q1 ${ip.ip}"
-      })
-      if ip.org:
-        utils.showEmoji(
-          title = ip.org
-          emoji = "📡"
-        )
-      if ip.city:
-        utils.showEmoji(
-          title = ip.city
-          emoji = "🏙️"
-        )
-    ]
-  } | country_icon(ip)
 }

@@ -30,6 +30,9 @@ insertText = lambda args : any -> kando.Command {
     if args.cmd.startswith("traceroute "):
       icon = "🧭"
       iconTheme = "emoji"
+    if args.cmd.startswith("ssh "):
+      icon = "🖥️"
+      iconTheme = "emoji"
   })
 }
 
@@ -41,8 +44,6 @@ showEmoji = lambda title : str, emoji  : str -> kando.Command {
     iconTheme = emoji
   })
 }
-
-
 
 showText = lambda args : any -> kando.Text {
   kando.Text {

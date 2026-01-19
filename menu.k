@@ -18,6 +18,7 @@ object_by_type = lambda t : str, obj: any -> any {
         "country" = _ip.country
         "org" = _ip.org
         "city" = _ip.city
+        "ssh" = _ip.ssh
       }
       for _ip in obj
     ]

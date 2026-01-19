@@ -1,5 +1,23 @@
 #!/usr/bin/env bash
 
+ssh_host_by_ip() {
+    local ip="$1"
+    local cfg="$HOME/.ssh/config"
+
+    awk -v ip="$ip" '
+        BEGIN {
+            host=""
+        }
+        /^\s*Host[[:space:]]+/ {
+            host=$2
+        }
+        /^\s*HostName[[:space:]]+/ && $2 == ip {
+            print host
+            exit
+        }
+    ' "$cfg"
+}
+
 ipv4_is_public() {
   local ip="$1"
 
@@ -59,6 +77,10 @@ for ip in $IPS; do
     city=$(get_city $ip)
     test -n "${city}" && \
       echo "    city: $city"
-
   } || :
+
+  hostname=$(ssh_host_by_ip $ip)
+
+  test -n "${hostname}" &&\
+      echo "    ssh: $hostname" || :
 done
