@@ -48,3 +48,10 @@ schema TextData:
 schema Text(Child):
   "type": str = "text"
   data: TextData
+
+schema UriData:
+  uri: str
+
+schema Uri(Child):
+  "type": str = "uri"
+  data: UriData

@@ -39,6 +39,10 @@ insertText = lambda args : any -> kando.Command {
     if args.cmd.startswith("ssh "):
       icon = "🖥️"
       iconTheme = "emoji"
+    if args.icon:
+      icon = args.icon
+      iconTheme = "emoji"
+
   })
 }
 
@@ -54,6 +58,15 @@ showEmoji = lambda title : str, emoji  : str -> kando.Command {
 showText = lambda args : any -> kando.Text {
   kando.Text {
     name = args.name
+    icon = args.icon
     data.text = args.text
+  }
+}
+
+makeURI = lambda args : any -> kando.Uri {
+  kando.Uri {
+    name = args.name
+    icon = args.icon
+    data.uri = args.uri
   }
 }
