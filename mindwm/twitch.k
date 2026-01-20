@@ -1,7 +1,10 @@
 import kando.schema as kando
 import kando.utils as utils
 
-schema TwitchClip:
+schema TwitchStreamer:
+  broadcaster: str
+
+schema TwitchClip(TwitchStreamer):
   slug: str
   title: str
   createdAt: str
@@ -11,8 +14,46 @@ schema TwitchClip:
   category: str
   broadcaster: str
 
+makeMenuTwitchStreamer = lambda streamer : any -> kando.Child {
+      utils.makeSubmenu({
+        name = streamer.broadcaster
+        icon = "🟣📺"
+        children = [
+          utils.makeURI({
+            name = "profile"
+            icon = "🧑‍💻"
+            uri = "https://twitch.tv/${streamer.broadcaster}"
+          })
+          utils.makeSubmenu({
+            name = "clips"
+            icon = "✂️"
+            children = [
+              utils.makeURI({
+                name = "24h"
+                icon = "🕒"
+                uri = "https://www.twitch.tv/${streamer.broadcaster}/clips?filter=clips&range=24h"
+              })
+              utils.makeURI({
+                name = "7d"
+                icon = "📅"
+                uri = "https://www.twitch.tv/${streamer.broadcaster}/clips?filter=clips&range=7d"
+              })
+              utils.makeURI({
+                name = "🗓"
+                uri = "https://www.twitch.tv/${streamer.broadcaster}/clips?filter=clips&range=30d"
+              })
+              utils.makeURI({
+                name = "All"
+                icon = "📚"
+                uri = "https://www.twitch.tv/${streamer.broadcaster}/clips?filter=clips&range=all"
+              })
+            ]
+          })
+        ]
+      })
+}
+
 makeMenuTwitchClip = lambda clip : any -> kando.Child {
-  windows = []
   r = utils.makeSubmenu({
     name = clip.slug[0:24],
     icon = "🎬"
@@ -25,18 +66,7 @@ makeMenuTwitchClip = lambda clip : any -> kando.Child {
       utils.makeSubmenu({
         name = clip.broadcaster
         icon = "🟣📺"
-        children = [
-          utils.makeURI({
-            name = "profile"
-            icon = "🧑‍💻"
-            uri = "https://twitch.tv/${clip.broadcaster}"
-          })
-          utils.makeURI({
-            name = "clips"
-            icon = "✂️"
-            uri = "https://www.twitch.tv/${clip.broadcaster}/clips?filter=clips&range=7d"
-          })
-        ]
+        children = [makeMenuTwitchStreamer(clip)]
       })
       utils.showText({
         name = "${clip.viewCount}"

@@ -47,6 +47,14 @@ object_by_type = lambda t : str, obj: any -> any {
       for _clip in obj
     ]
 
+  if t == "twitch_streamer":
+    r = [
+      twitch.TwitchStreamer {
+        "broadcaster" = _streamer.name
+      }
+      for _streamer in obj
+    ]
+
   r
 }
 
@@ -63,6 +71,8 @@ child = lambda obj : any -> kando.Child {
     child = tmuxp.makeMenu(obj)
   if typeof(obj) == "TwitchClip":
     child = twitch.makeMenuTwitchClip(obj)
+  if typeof(obj) == "TwitchStreamer":
+    child = twitch.makeMenuTwitchStreamer(obj)
   child
 }
 

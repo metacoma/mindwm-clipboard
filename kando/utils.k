@@ -66,7 +66,8 @@ showText = lambda args : any -> kando.Text {
 makeURI = lambda args : any -> kando.Uri {
   kando.Uri {
     name = args.name
-    icon = args.icon
+    if args.icon:
+      icon = args.icon
     data.uri = args.uri
   }
 }
