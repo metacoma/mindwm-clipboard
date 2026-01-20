@@ -9,7 +9,7 @@ schema Ip4:
   country?: str
   org?: str
   city?: str
-  ssh?: str
+  ssh?: ssh.SshHost
 
 country_icon = lambda x -> any {
   if (x.country):

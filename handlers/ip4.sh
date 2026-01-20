@@ -1,5 +1,29 @@
 #!/usr/bin/env bash
 
+ssh_tmux_session_list() {
+    ssh seed.mgmt.mansion.shitcluster.io 'tmux list-sessions \; list-windows -a' \
+    | awk '
+    BEGIN {
+      print "        tmux_sessions:"
+    }
+    # строки окон: session:idx: window
+    /^[^:]+:[0-9]+:/ {
+      session=$1
+      sub(/:.*/, "", session)
+
+      window=$2
+      gsub(/[*Z-]/, "", window)
+
+      if (!(session in seen)) {
+        print "          " session ":"
+        seen[session]=1
+      }
+
+      print "            - " window
+    }
+    '
+}
+
 ssh_host_by_ip() {
     local ip="$1"
     local cfg="$HOME/.ssh/config"
@@ -81,6 +105,9 @@ for ip in $IPS; do
 
   hostname=$(ssh_host_by_ip $ip)
 
-  test -n "${hostname}" &&\
-      echo "    ssh: $hostname" || :
+  test -n "${hostname}" && {
+      echo "    ssh:"
+      echo "        hostname: ${hostname}"
+      ssh_tmux_session_list ${hostname}
+  } || :
 done
