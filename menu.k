@@ -2,6 +2,7 @@ import kando.schema as kando
 import kando.utils as utils
 import mindwm.ipv4 as ipv4
 import mindwm.tmuxp as tmuxp
+import mindwm.twitch as twitch
 import file
 import yaml
 
@@ -31,6 +32,21 @@ object_by_type = lambda t : str, obj: any -> any {
       }
       for _tmuxp in obj
     ]
+  if t == "twitch_clips":
+    r = [
+      twitch.TwitchClip {
+        "slug" = _clip.slug
+        "title" = _clip.title
+        "createdAt" = _clip.createdAt
+        "viewCount" = _clip.viewCount
+        "durationSeconds" = _clip.durationSeconds
+        "url" = _clip.url
+        "category" = _clip.category
+        "broadcaster" = _clip.broadcaster
+      }
+      for _clip in obj
+    ]
+
   r
 }
 
@@ -45,6 +61,8 @@ child = lambda obj : any -> kando.Child {
     child = ipv4.makeMenu(obj)
   if typeof(obj) == "Tmuxp":
     child = tmuxp.makeMenu(obj)
+  if typeof(obj) == "TwitchClip":
+    child = twitch.makeMenuTwitchClip(obj)
   child
 }
 

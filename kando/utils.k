@@ -1,10 +1,16 @@
 import .schema as kando
 
-makeSubmenu = lambda name : str, children: [kando.Child] -> kando.Child {
+schema SubMenuArgs:
+  name: str
+  icon?: str = "🕸️"
+  children: [kando.Child]
+
+makeSubmenu = lambda arg : SubMenuArgs -> kando.Child {
   {
     type = "submenu"
-    name = name
-    "children" = children
+    name = arg.name
+    icon = arg.icon
+    "children" = arg.children
   }
 }
 

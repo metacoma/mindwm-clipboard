@@ -16,12 +16,14 @@ sshMenu = lambda sshHost: SshHost  -> kando.Child {
     name = "current"
     cmd = "ssh ${sshHost.hostname}"
   })
-  menu = utils.makeSubmenu("ssh", \
-    [
-      new_terminal,
-      current_terminal
-      if sshHost.tmux_sessions:
-        tmux.makeSshTmuxMenu(sshHost.hostname, sshHost.tmux_sessions)
-    ])
+  menu = utils.makeSubmenu({
+      name = "ssh"
+      children = [
+        new_terminal,
+        current_terminal
+        if sshHost.tmux_sessions:
+          tmux.makeSshTmuxMenu(sshHost.hostname, sshHost.tmux_sessions)
+      ]
+    })
   menu
 }

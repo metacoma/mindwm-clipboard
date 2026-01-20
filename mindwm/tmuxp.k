@@ -24,12 +24,11 @@ makeWindowMenu = lambda host: str, session_name: str, windows: [any] -> [kando.C
 
 makeMenu = lambda tmuxp : any -> kando.Child {
   windows = []
-  r = utils.makeSubmenu(
+  r = utils.makeSubmenu({
     name = tmuxp.name,
     children = [
-      utils.makeSubmenu(
+      utils.makeSubmenu({
         name = session.name
-        #children = [ makeSessionMenu(tmuxp.host, session) ]
         children = [
           utils.makeCommand({
             name = "open"
@@ -40,9 +39,9 @@ makeMenu = lambda tmuxp : any -> kando.Child {
             cmd = "gnome-terminal -- ssh -t ${tmuxp.host} 'tmux kill-session -t ${session.name}; ./.local/bin/tmuxp load ${session.name}'"
           })
         ] + makeWindowMenu(tmuxp.host, session.name, session.windows)
-      )
+      })
       for session in tmuxp.sessions
     ]
-  )
+  })
   r
 }

@@ -6,7 +6,6 @@ ssh_tmux_session_list() {
     BEGIN {
       print "        tmux_sessions:"
     }
-    # строки окон: session:idx: window
     /^[^:]+:[0-9]+:/ {
       session=$1
       sub(/:.*/, "", session)

@@ -18,9 +18,10 @@ makeSshPaneMenu = lambda hostname : str, session_name : str, windows: [str] -> [
 
 SshWindowMenu = lambda hostname : str, session_name : str, windows: [str] -> kando.Child {
     paneMenu = makeSshPaneMenu(hostname, session_name, windows)
-    menu = utils.makeSubmenu(
-      session_name,
-      paneMenu)
+    menu = utils.makeSubmenu({
+      name = session_name,
+      children = paneMenu
+    })
     menu
 }
 
@@ -30,7 +31,10 @@ makeSshTmuxMenu = lambda hostname : str, sessions : {str:[str]} -> kando.Child {
     for name, windows in sessions
   ]
 
-  subMenu = utils.makeSubmenu("tmux", menu)
+  subMenu = utils.makeSubmenu({
+    name = "tmux"
+    children = menu
+  })
 
   subMenu
 
