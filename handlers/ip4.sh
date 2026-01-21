@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 ssh_tmux_session_list() {
-    ssh seed.mgmt.mansion.shitcluster.io 'tmux list-sessions \; list-windows -a' \
+    local ssh_hostname=$1
+    ssh -o ConnectTimeout=2 ${ssh_hostname} 'tmux list-sessions \; list-windows -a' \
     | awk '
     BEGIN {
       print "        tmux_sessions:"
