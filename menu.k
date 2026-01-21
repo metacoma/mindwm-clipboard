@@ -106,7 +106,10 @@ kando.Config {
         root = {
           name = "root"
           children = [
-            child(object)
+            kando.Redirect {
+              name = "${object.name}"
+              data.menu = "${typeof(object)} ${object.name}"
+            }
             for object in _objects
           ]
         }
@@ -115,7 +118,7 @@ kando.Config {
       kando.Menu {
         root = {
           name = "${typeof(object)} ${object.name}"
-          children = [ child(object) ]
+          children = child(object).children
         }
       }
       for object in _objects

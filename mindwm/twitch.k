@@ -6,6 +6,7 @@ schema TwitchStreamer:
   broadcaster: str
 
 schema TwitchClip(TwitchStreamer):
+  name: str = slug
   slug: str
   title: str
   createdAt: str
