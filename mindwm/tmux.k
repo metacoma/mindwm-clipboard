@@ -2,6 +2,7 @@ import kando.utils as utils
 import kando.schema as kando
 
 schema Tmux:
+  name: str = session
   session: str
 
 makeSshPaneMenu = lambda hostname : str, session_name : str, windows: [str] -> [kando.Child] {

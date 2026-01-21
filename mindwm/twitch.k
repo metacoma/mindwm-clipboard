@@ -2,6 +2,7 @@ import kando.schema as kando
 import kando.utils as utils
 
 schema TwitchStreamer:
+  name: str = broadcaster
   broadcaster: str
 
 schema TwitchClip(TwitchStreamer):

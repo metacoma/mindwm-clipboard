@@ -3,6 +3,7 @@ import kando.utils as utils
 import mindwm.tmux as tmux
 
 schema SshHost:
+  name: str = hostname
   hostname: str
   tmux_sessions?: {str:[str]} = {}
 

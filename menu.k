@@ -111,7 +111,14 @@ kando.Config {
           ]
         }
       }
-
+    ] + [
+      kando.Menu {
+        root = {
+          name = "${typeof(object)} ${object.name}"
+          children = [ child(object) ]
+        }
+      }
+      for object in _objects
     ]
     collections = [
       {

@@ -2,6 +2,7 @@ import kando.schema as kando
 import kando.utils as utils
 
 schema File:
+  name: str = path
   path: str
   content: str = None
 

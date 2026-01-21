@@ -4,6 +4,7 @@ import mindwm.ssh as ssh
 
 
 schema Ip4:
+  name: str = ip
   ip: str
   state?: str
   country?: str
