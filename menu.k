@@ -102,6 +102,7 @@ child = lambda obj : any -> kando.Child {
 kando.Config {
     menus = [
       kando.Menu {
+        centered = True
         root = {
           name = "root"
           children = [
@@ -110,6 +111,7 @@ kando.Config {
           ]
         }
       }
+
     ]
     collections = [
       {

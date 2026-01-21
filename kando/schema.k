@@ -13,7 +13,7 @@ schema Config:
 
 schema Menu:
   shortcut?: str = "Control+Space"
-  shortcutID?: str = "IP"
+  shortcutID?: str = "main"
   centered?: bool = False
   anchored?: bool = False
   hoverMode?: bool = False
