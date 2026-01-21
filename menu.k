@@ -3,6 +3,7 @@ import kando.utils as utils
 import mindwm.ipv4 as ipv4
 import mindwm.tmuxp as tmuxp
 import mindwm.twitch as twitch
+import mindwm.content as content
 import file
 import yaml
 
@@ -55,6 +56,21 @@ object_by_type = lambda t : str, obj: any -> any {
       for _streamer in obj
     ]
 
+  if t == "json":
+    r = [
+      content.JsonFile {
+        path = _file.path
+      }
+      for _file in obj
+    ]
+  if t == "yaml":
+    r = [
+      content.YamlFile {
+        path = _file.path
+      }
+      for _file in obj
+    ]
+
   r
 }
 
@@ -73,6 +89,10 @@ child = lambda obj : any -> kando.Child {
     child = twitch.makeMenuTwitchClip(obj)
   if typeof(obj) == "TwitchStreamer":
     child = twitch.makeMenuTwitchStreamer(obj)
+  if typeof(obj) == "JsonFile":
+    child = content.makeMenuJsonFile(obj)
+  if typeof(obj) == "YamlFile":
+    child = content.makeMenuYamlFile(obj)
   child
 }
 
