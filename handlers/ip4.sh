@@ -119,3 +119,4 @@ for ip in $IPS; do
   } || :
   pop
 done
+exit 0

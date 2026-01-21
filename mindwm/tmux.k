@@ -4,6 +4,9 @@ import kando.schema as kando
 schema Tmux:
   name: str = session
   session: str
+  icon = lambda -> str {
+    "🧩"
+  }
 
 makeSshPaneMenu = lambda hostname : str, session_name : str, windows: [str] -> [kando.Child] {
   menu = [

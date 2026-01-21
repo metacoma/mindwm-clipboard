@@ -6,6 +6,9 @@ schema SshHost:
   name: str = hostname
   hostname: str
   tmux_sessions?: {str:[str]} = {}
+  icon = lambda -> str {
+    "🔑"
+  }
 
 sshMenu = lambda sshHost: SshHost  -> kando.Child {
   new_terminal = utils.makeCommand({

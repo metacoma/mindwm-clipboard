@@ -5,6 +5,9 @@ schema Tmuxp:
   name: str
   host?: str
   sessions: any
+  icon = lambda -> str {
+    "🧩"
+  }
 
 
 makeWindowMenu = lambda host: str, session_name: str, windows: [any] -> [kando.Child] {

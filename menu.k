@@ -108,7 +108,7 @@ kando.Config {
           children = [
             kando.Redirect {
               name = "${object.name}"
-              icon = object.icon
+              icon = object.icon()
               data.menu = "${typeof(object)} ${object.name}"
             }
             for object in _objects
@@ -119,6 +119,7 @@ kando.Config {
       kando.Menu {
         root = {
           name = "${typeof(object)} ${object.name}"
+          icon = object.icon()
           children = child(object).children + [
             kando.Redirect {
               name = "back"

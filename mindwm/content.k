@@ -5,6 +5,9 @@ schema File:
   name: str = path
   path: str
   content: str = None
+  icon = lambda -> str {
+    "📄"
+  }
 
 schema JsonFile(File):
   content: str = "json"

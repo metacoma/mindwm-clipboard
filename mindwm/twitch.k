@@ -4,6 +4,9 @@ import kando.utils as utils
 schema TwitchStreamer:
   name: str = broadcaster
   broadcaster: str
+  icon = lambda -> str {
+    "🟣📺"
+  }
 
 schema TwitchClip(TwitchStreamer):
   name: str = slug
@@ -14,7 +17,9 @@ schema TwitchClip(TwitchStreamer):
   durationSeconds: int
   url: str
   category: str
-  broadcaster: str
+  icon = lambda -> str {
+    "✂️"
+  }
 
 makeMenuTwitchStreamer = lambda streamer : any -> kando.Child {
       utils.makeSubmenu({
