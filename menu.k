@@ -4,24 +4,18 @@ import mindwm.ipv4 as ipv4
 import mindwm.tmuxp as tmuxp
 import mindwm.twitch as twitch
 import mindwm.content as content
+import mindwm.domain as domain
 import file
 import yaml
 
 
-_i = yaml.decode(file.read("./input.yaml"))
+_all_objects = yaml.decode(file.read("./input.yaml"))
 
 object_by_type = lambda t : str, obj: any -> any {
   r = []
   if t == "ip4":
     r = [
-      ipv4.Ip4 {
-        "ip" = _ip.ip,
-        "state" = _ip.state
-        "country" = _ip.country
-        "org" = _ip.org
-        "city" = _ip.city
-        "ssh" = _ip.ssh
-      }
+      ipv4.make(obj)
       for _ip in obj
     ]
   if t == "tmuxp":
@@ -71,12 +65,18 @@ object_by_type = lambda t : str, obj: any -> any {
       for _file in obj
     ]
 
+  if t == "domain":
+    r = [
+      domain.make(_domain, _all_objects)
+      for _domain in obj
+    ]
+
   r
 }
 
 __objects = [
   object_by_type(t,obj)
-  for t, obj in _i
+  for t, obj in _all_objects
 ]
 _objects = [i for sub in __objects for i in sub]
 
@@ -93,6 +93,8 @@ child = lambda obj : any -> kando.Child {
     child = content.makeMenuJsonFile(obj)
   if typeof(obj) == "YamlFile":
     child = content.makeMenuYamlFile(obj)
+  if typeof(obj) == "Domain":
+    child = domain.makeMenu(obj, _all_objects)
   child
 }
 
@@ -117,6 +119,7 @@ kando.Config {
       }
     ] + [
       kando.Menu {
+        centered = True
         root = {
           name = "${typeof(object)} ${object.name}"
           icon = object.icon()

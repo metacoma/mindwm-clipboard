@@ -4,8 +4,8 @@ import mindwm.ssh as ssh
 
 
 schema Ip4:
-  name: str = ip
   ip: str
+  name: str = ip
   state?: str
   country?: str
   org?: str
@@ -14,6 +14,17 @@ schema Ip4:
   icon = lambda -> str {
     utils.country_icon(country)
   }
+
+make = lambda obj: any -> Ip4 {
+  Ip4 {
+    ip = obj.ip
+    state = obj.state
+    country = obj.country
+    org = obj.org
+    city = obj.city
+    ssh = obj.ssh
+  }
+}
 
 makeMenu = lambda ip -> kando.Child {
   {
