@@ -55,3 +55,10 @@ schema UriData:
 schema Uri(Child):
   "type": str = "uri"
   data: UriData
+
+schema RedirectData:
+  menu: str
+
+schema Redirect(Child):
+  "type": str = "redirect"
+  data: RedirectData
