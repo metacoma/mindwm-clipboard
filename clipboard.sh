@@ -25,7 +25,6 @@ while clipnotify -s ${notify_selection}; do
     export tmpdir
     rm input.yaml
     bash ./handlers.sh ${tmpdir}
-    #yq eval-all '. as $item ireduce ({}; . * $item)' "${tmpdir}"/*.yaml | tee input.yaml
     cat ${tmpdir}/*.yaml | tee input.yaml
     if [ -s input.yaml ]; then
       kcl run ./menu.k --format json > menus.json

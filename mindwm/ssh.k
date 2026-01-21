@@ -9,7 +9,7 @@ schema SshHost:
 sshMenu = lambda sshHost: SshHost  -> kando.Child {
   new_terminal = utils.makeCommand({
     name = "new"
-    cmd = "gnome-terminal -- ssh ${sshHost.hostname}"
+    cmd = utils.runTerminal("ssh ${sshHost.hostname}")
     icon = "🔑"
   })
   current_terminal = utils.insertText({

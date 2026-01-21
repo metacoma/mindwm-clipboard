@@ -8,7 +8,7 @@ makeSshPaneMenu = lambda hostname : str, session_name : str, windows: [str] -> [
   menu = [
     utils.makeCommand({
       name = window
-      cmd = "gnome-terminal -- ssh -t ${hostname} tmux attach -t ${session_name}:${window}"
+      cmd = utils.runTerminal("ssh -t ${hostname} tmux attach -t ${session_name}:${window}")
       icon = "🧩"
     })
     for window in windows

@@ -57,17 +57,17 @@ makeMenuJsonFile = lambda f : JsonFile -> kando.Child {
       utils.makeCommand({
         name = "as YAML"
         icon = "🧾"
-        cmd = "gnome-terminal -- sh -c 'cat ${f.path} | yq --yaml-output | less'"
+        cmd = utils.runTerminal("sh -c 'cat ${f.path} | yq --yaml-output | less'")
       })
       utils.makeCommand({
         name = "as KCL"
         icon = "🧬"
-        cmd = "gnome-terminal -- sh -c '(cd /tmp; kcl import -m json --force ${f.path} -o /dev/stdout | less)'"
+        cmd = utils.runTerminal("sh -c '(cd /tmp; kcl import -m json --force ${f.path} -o /dev/stdout | less)'")
       })
       utils.makeCommand({
         name = "Prettyfy"
         icon = "🪄"
-        cmd = "gnome-terminal -- sh -c 'cat ${f.path} | jq | less'"
+        cmd = utils.runTerminal("sh -c 'cat ${f.path} | jq | less'")
       })
       utils.makeSubmenu({
         name = "Explore"
@@ -91,7 +91,7 @@ makeMenuYamlFile = lambda f : YamlFile -> kando.Child {
       utils.makeCommand({
         name = "as KCL"
         icon = "🧬"
-        cmd = "gnome-terminal -- sh -c '(cd /tmp; kcl import -m yaml --force ${f.path} -o /dev/stdout | less)'"
+        cmd = utils.runTerminal("sh -c '(cd /tmp; kcl import -m yaml --force ${f.path} -o /dev/stdout | less)'")
       })
       utils.makeSubmenu({
         name = "Explore"

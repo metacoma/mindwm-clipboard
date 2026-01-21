@@ -12,7 +12,7 @@ makeWindowMenu = lambda host: str, session_name: str, windows: [any] -> [kando.C
     r = [
       utils.makeCommand({
         name = window
-        cmd = "gnome-terminal -- ssh -t ${host} 'tmux attach -t ${session_name} \; select-window -t ${window}'"
+        cmd = utils.runTerminal("ssh -t ${host} 'tmux attach -t ${session_name} \; select-window -t ${window}'")
       })
       for window in windows
     ]
@@ -32,11 +32,11 @@ makeMenu = lambda tmuxp : any -> kando.Child {
         children = [
           utils.makeCommand({
             name = "open"
-            cmd = "gnome-terminal -- ssh -t ${tmuxp.host} tmux attach -t ${session.name}"
+            cmd = utils.runTerminal("ssh -t ${tmuxp.host} tmux attach -t ${session.name}")
           })
           utils.makeCommand({
             name = "restart"
-            cmd = "gnome-terminal -- ssh -t ${tmuxp.host} 'tmux kill-session -t ${session.name}; ./.local/bin/tmuxp load ${session.name}'"
+            cmd = utils.runTerminal("ssh -t ${tmuxp.host} 'tmux kill-session -t ${session.name}; ./.local/bin/tmuxp load ${session.name}'")
           })
         ] + makeWindowMenu(tmuxp.host, session.name, session.windows)
       })

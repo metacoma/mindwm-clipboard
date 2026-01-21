@@ -1,4 +1,5 @@
 import .schema as kando
+import config as config
 
 schema SubMenuArgs:
   name: str
@@ -70,4 +71,11 @@ makeURI = lambda args : any -> kando.Uri {
       icon = args.icon
     data.uri = args.uri
   }
+}
+
+runTerminal = lambda cmd : any -> str {
+  run_cmd = "xterm -e sh -c '${cmd}'"
+  if (config.terminal == "gnome-terminal"):
+    run_cmd = "gnome-terminal -- sh -c '${cmd}'"
+  run_cmd
 }

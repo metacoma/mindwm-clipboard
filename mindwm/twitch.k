@@ -61,7 +61,7 @@ makeMenuTwitchClip = lambda clip : any -> kando.Child {
       utils.makeCommand({
         name = "Download"
         icon = "💾"
-        cmd = "gnome-terminal -- ~/bin/twitch-dl download -q source ${clip.slug}"
+        cmd = utils.runTerminal("~/bin/twitch-dl download -q source ${clip.slug}")
       })
       utils.makeSubmenu({
         name = clip.broadcaster
