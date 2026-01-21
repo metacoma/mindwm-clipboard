@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
 
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+
+source "$SCRIPT_DIR/utils.sh"
+
+
 ssh_tmux_session_list() {
     local ssh_hostname=$1
     ssh -o ConnectTimeout=2 ${ssh_hostname} 'tmux list-sessions \; list-windows -a' \
     | awk '
     BEGIN {
-      print "        tmux_sessions:"
+      print "      tmux_sessions:"
     }
     /^[^:]+:[0-9]+:/ {
       session=$1
@@ -15,11 +20,11 @@ ssh_tmux_session_list() {
       gsub(/[*Z-]/, "", window)
 
       if (!(session in seen)) {
-        print "          " session ":"
+        print "        " session ":"
         seen[session]=1
       }
 
-      print "            - " window
+      print "          - " window
     }
     '
 }
@@ -81,33 +86,36 @@ get_city() {
   | tail -n1
 }
 
-
-tmpdir="${1:?tmpdir is required}"
 IPS=`grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | sort -u`
 
 test -z "$IPS" && exit 0
 
-echo "ip4:"
+y "ip4:"
+push
 for ip in $IPS; do
-  echo "  - ip: $ip"
+  y "- ip: $ip"
+  push
   country=""
   ipv4_is_public $ip && {
     country=$(get_country $ip)
     test -n "${country}" && \
-      echo "    country: $country"
+      y "country: $country"
     org=$(get_org $ip)
     test -n "${org}" && \
-      echo "    org: $org"
+      y "org: $org"
     city=$(get_city $ip)
     test -n "${city}" && \
-      echo "    city: $city"
+      y "city: $city"
   } || :
 
   hostname=$(ssh_host_by_ip $ip)
 
   test -n "${hostname}" && {
-      echo "    ssh:"
-      echo "        hostname: ${hostname}"
+      y "ssh:"
+      push
+      y "hostname: ${hostname}"
       ssh_tmux_session_list ${hostname}
+      pop
   } || :
+  pop
 done

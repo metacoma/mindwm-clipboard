@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/utils.sh"
+
 grep_urls() {
   grep -Po '(?i)\bhttps?://(?:clips\.twitch\.tv/[a-z0-9_-]+|(?:www\.)?twitch\.tv/[^/\s]+/clip/[a-z0-9_-]+)(?=\?|#|\s|$)'
 }
-
-
 
 get_clip_info() {
   local clip_url=$1
@@ -24,9 +25,12 @@ get_clip_info() {
 URLS=$(grep_urls) || :
 test -n "${URLS}" || exit 0
 
-echo "twitch_clips:"
+y "twitch_clips:"
+push
 for url in $URLS;  do
   clip_info=$(get_clip_info ${url})
-  echo "  -"
-  echo ${clip_info} | yq -y | sed 's/^/    /'
+  y "-"
+  push
+  echo ${clip_info} | yq -y | sed "s/^/$(printf '%*s' $INDENT)/"
+  pop
 done
