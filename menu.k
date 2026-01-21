@@ -15,7 +15,7 @@ object_by_type = lambda t : str, obj: any -> any {
   r = []
   if t == "ip4":
     r = [
-      ipv4.make(obj)
+      ipv4.make(_ip)
       for _ip in obj
     ]
   if t == "tmuxp":

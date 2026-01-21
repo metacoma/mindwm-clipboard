@@ -3,8 +3,10 @@
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/utils.sh"
 
-domains=$(grep -oE '([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}')
+domains=$(grep -oE '([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}' | xargs -n1 | sort -u)
 all_ips=""
+
+test -n "${domains}" || exit 0
 
 y "domain:"
 push
