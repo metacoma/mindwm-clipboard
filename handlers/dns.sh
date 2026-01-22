@@ -58,6 +58,10 @@ for domain in ${domains}; do
   pop
 done
 
+if [[ -z "${all_ips//[[:space:]]/}" ]]; then
+  exit 1
+fi
+
 for ip in $all_ips; do
   echo $ip | ${SCRIPT_DIR}/ip4.sh $tmpdir "Ip ${ip}" #> ${tmpdir}/${ip}.yaml
 done
