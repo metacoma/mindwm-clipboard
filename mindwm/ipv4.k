@@ -39,6 +39,11 @@ makeMenu = lambda ip -> kando.Child {
         name = "traceroute"
         cmd = "traceroute -n -q1 ${ip.ip}"
       })
+      utils.makeCommand({
+        name = "MTR"
+        icon = "📶"
+        cmd = utils.runTerminal("mtr -n ${ip.ip}")
+      })
       if ip.org:
         utils.showEmoji(
           title = ip.org
