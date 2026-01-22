@@ -43,14 +43,20 @@ makeMailserver = lambda obj: any, all_objects: any -> Mailserver {
 make = lambda obj: any, all_objects: any -> Domain {
   Domain {
     name = obj.name
-    ip_addresses = [
-      ipv4.make(all_objects["Ip ${ip.ip}"]["ip4"][0])
-      for ip in obj.ipv4
-    ]
-    ns = [
-      makeNameserver(ns, all_objects)
-      for ns in obj.ns
-    ]
+    if obj.ipv4:
+      ip_addresses = [
+        ipv4.make(all_objects["Ip ${ip.ip}"]["ip4"][0])
+        for ip in obj.ipv4
+      ]
+    else:
+      ip_addresses = []
+    if obj.ns:
+      ns = [
+        makeNameserver(ns, all_objects)
+        for ns in obj.ns
+      ]
+    else:
+      ns = []
     if obj.mx:
       mx = [
         makeMailserver(mx, all_objects)
@@ -65,21 +71,22 @@ makeMenu = lambda d: Domain, objects: any -> kando.Child {
   kando.Child {
     name = d.name
     children = [
-      utils.makeSubmenu({
-        name = "NS"
-        icon = "🖥️"
-        children = [
-          utils.makeSubmenu({
-            name = nameserver.name
-            icon = "🗄️"
-            children = [
-              ipv4.makeMenu(ip)
-              for ip in nameserver.ip_addresses
-            ]
-          })
-          for nameserver in d.ns
-        ]
-      })
+      if d.ns:
+        utils.makeSubmenu({
+          name = "NS"
+          icon = "🖥️"
+          children = [
+            utils.makeSubmenu({
+              name = nameserver.name
+              icon = "🗄️"
+              children = [
+                ipv4.makeMenu(ip)
+                for ip in nameserver.ip_addresses
+              ]
+            })
+            for nameserver in d.ns
+          ]
+        })
       if d.mx:
         utils.makeSubmenu({
           name = "MX"
