@@ -5,6 +5,7 @@ import mindwm.tmuxp as tmuxp
 import mindwm.twitch as twitch
 import mindwm.content as content
 import mindwm.domain as domain
+import mindwm.mindmap as mindmap
 import file
 import yaml
 
@@ -71,6 +72,12 @@ object_by_type = lambda t : str, obj: any -> any {
       for _domain in obj
     ]
 
+  if t == "mindmap":
+    r = [
+      mindmap.make(_node, _all_objects)
+      for _node in obj
+    ]
+
   r
 }
 
@@ -95,6 +102,8 @@ child = lambda obj : any -> kando.Child {
     child = content.makeMenuYamlFile(obj)
   if typeof(obj) == "Domain":
     child = domain.makeMenu(obj, _all_objects)
+  if typeof(obj) == "Node":
+    child = mindmap.makeMenu(obj)
   child
 }
 
@@ -111,6 +120,8 @@ kando.Config {
             kando.Redirect {
               name = "${object.name}"
               icon = object.icon()
+              if object.iconTheme:
+                iconTheme = object.iconTheme()
               data.menu = "${typeof(object)} ${object.name}"
             }
             for object in _objects
@@ -123,6 +134,8 @@ kando.Config {
         root = {
           name = "${typeof(object)} ${object.name}"
           icon = object.icon()
+          if object.iconTheme:
+            iconTheme = object.iconTheme()
           children = child(object).children + [
             kando.Redirect {
               name = "back"
@@ -143,3 +156,11 @@ kando.Config {
       }
     ]
 }
+
+
+
+#t = _objects[0]
+#mindmap.p(t)
+
+#n = mindmap.make(_all_objects["mindmap"][0], _all_objects)
+#m = mindmap.makeMenu(n)
