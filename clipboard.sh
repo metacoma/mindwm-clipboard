@@ -24,7 +24,7 @@ while clipnotify -s ${notify_selection}; do
         rm /tmp/skip_next_clipboard
         continue
     }
-    xclip -s ${xclip_selection} -o | tee > /tmp/clipboard.txt
+    xclip -s ${xclip_selection} -o | tee | bin/filter.sh > /tmp/clipboard.txt
     tmpdir="$(mktemp -d)"
     export tmpdir
     rm input.yaml
