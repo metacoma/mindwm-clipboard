@@ -27,6 +27,14 @@ makeCommand = lambda args : any -> kando.Command {
   }
 }
 
+makeCopyAction = lambda text : str -> kando.Command {
+  makeCommand({
+    name = "Copy"
+    cmd = "echo ${text} | copy_action.sh"
+    icon = "📋"
+  })
+}
+
 insertText = lambda args : any -> kando.Command {
   makeCommand({
     name = args.name

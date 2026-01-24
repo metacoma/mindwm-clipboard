@@ -44,6 +44,7 @@ makeMenu = lambda ip -> kando.Child {
         icon = "📶"
         cmd = utils.runTerminal("mtr -n ${ip.ip}")
       })
+      utils.makeCopyAction(ip.ip)
       if ip.org:
         utils.showEmoji(
           title = ip.org

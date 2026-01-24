@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -x
 
-PATH=${PATH}:~/bin
+PATH=${PATH}:~/bin:$(pwd)/bin
 
 case $1 in
     clipboard)
@@ -20,6 +20,10 @@ esac
 
 while clipnotify -s ${notify_selection}; do
     echo "new clipboard"
+    test -f /tmp/skip_next_clipboard && {
+        rm /tmp/skip_next_clipboard
+        continue
+    }
     xclip -s ${xclip_selection} -o | tee > /tmp/clipboard.txt
     tmpdir="$(mktemp -d)"
     export tmpdir
