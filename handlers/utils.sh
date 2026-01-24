@@ -25,7 +25,7 @@ reset_indent() {
   INDENT=0
 }
 
-if [ -n "$2" ]; then
-  y "\"$2\":"
-  push
-fi
+#if [ -n "$2" ]; then
+#  y "\"$2\":"
+#  push
+#fi

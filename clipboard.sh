@@ -32,11 +32,12 @@ while clipnotify -s ${notify_selection}; do
     cat ${tmpdir}/*.yaml | tee input.yaml
     if [ -s input.yaml ]; then
       kcl run ./menu.k --format json > menus.json
-      checksum_file="/tmp/kando_menu.$(md5sum ./menus.json | cut -d" " -f1)"
-      cp ./menus.json ${checksum_file}
+      CHECKSUM_FILE="/tmp/kando_menu.$(md5sum ./menus.json | cut -d" " -f1)"
+      export CHECKSUM_FILE
+      cp ./menus.json ${CHECKSUM_FILE}
       mv menus.json ~/.config/kando/menus.json
       kando -m root &
-      cat ${checksum_file} | ./run_scripts.sh posthooks ${tmpdir}
+      cat ${CHECKSUM_FILE} | ./run_scripts.sh posthooks ${CHECKSUM_FILE}
 
     fi
 done

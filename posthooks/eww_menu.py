@@ -15,7 +15,8 @@ import yaml
 EWW_BIN = os.environ.get("EWW_BIN", os.path.expanduser("~/.local/bin/eww"))
 EWW_VAR = os.environ.get("EWW_VAR", "items")
 
-KANDO_YAML = os.environ.get("KANDO_YAML", os.path.expanduser("~/.config/kando/config.yaml"))
+#MENUS_FILE = os.environ.get("CHECKSUM_FILE")
+MENUS_FILE = os.environ.get("TMP_INPUT")
 
 PATH_VALUE = os.environ.get("EWW_BUTTON_PATH", "/tmp/abc.json")
 SKIP_ROOT_NAME = os.environ.get("EWW_SKIP_ROOT", "root")
@@ -70,11 +71,6 @@ def read_yaml() -> Dict[str, Any]:
         if data.strip():
             return yaml.safe_load(data) or {}
 
-    # fallback to file
-    if os.path.exists(KANDO_YAML):
-        with open(KANDO_YAML, "r", encoding="utf-8") as f:
-            return yaml.safe_load(f) or {}
-
     return {}
 
 
@@ -102,7 +98,7 @@ def extract_buttons(doc: Dict[str, Any]) -> List[Dict[str, str]]:
                 "Id": name,
                 "Title": title_from_id(name),
                 "Icon": str(icon),
-                "Command": f"kando -m '{name}'",
+                "Command": f"cp {MENUS_FILE} ~/.config/kando/menus.json && kando -m '{name}'",
                 "Path": PATH_VALUE,
             }
         )
