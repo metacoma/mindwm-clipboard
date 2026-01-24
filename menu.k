@@ -120,7 +120,7 @@ kando.Config {
             kando.Redirect {
               name = "${object.name}"
               icon = object.icon()
-              if object.iconTheme:
+              if "iconTheme" in object and object.iconTheme:
                 iconTheme = object.iconTheme()
               data.menu = "${typeof(object)} ${object.name}"
             }
@@ -134,7 +134,7 @@ kando.Config {
         root = {
           name = "${typeof(object)} ${object.name}"
           icon = object.icon()
-          if object.iconTheme:
+          if "iconTheme" in object and object.iconTheme:
             iconTheme = object.iconTheme()
           children = child(object).children + [
             kando.Redirect {
