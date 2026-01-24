@@ -28,11 +28,15 @@ while clipnotify -s ${notify_selection}; do
     tmpdir="$(mktemp -d)"
     export tmpdir
     rm input.yaml
-    bash ./handlers.sh ${tmpdir}
+    cat /tmp/clipboard.txt | ./run_scripts.sh handlers ${tmpdir}
     cat ${tmpdir}/*.yaml | tee input.yaml
     if [ -s input.yaml ]; then
       kcl run ./menu.k --format json > menus.json
+      checksum_file="/tmp/kando_menu.$(md5sum ./menus.json | cut -d" " -f1)"
+      cp ./menus.json ${checksum_file}
       mv menus.json ~/.config/kando/menus.json
       kando -m root &
+      cat ${checksum_file} | ./run_scripts.sh posthooks ${tmpdir}
+
     fi
 done
