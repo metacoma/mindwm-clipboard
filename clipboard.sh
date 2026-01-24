@@ -31,7 +31,7 @@ while clipnotify -s ${notify_selection}; do
     cat /tmp/clipboard.txt | ./run_scripts.sh handlers ${tmpdir}
     cat ${tmpdir}/*.yaml | tee input.yaml
     if [ -s input.yaml ]; then
-      kcl run ./menu.k --format json > menus.json
+      kcl run ./menu.k --format json > menus.json || continue
       CHECKSUM_FILE="/tmp/kando_menu.$(md5sum ./menus.json | cut -d" " -f1)"
       export CHECKSUM_FILE
       cp ./menus.json ${CHECKSUM_FILE}

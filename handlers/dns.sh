@@ -13,7 +13,7 @@ push
 for domain in ${domains}; do
   y "- name: ${domain}"
   push
-  IPS=$(dig +short A "${domain}")
+  IPS=$(dig +short A "${domain}" | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}')
   all_ips="${all_ips} ${IPS}"
   y "ipv4:"
   push
