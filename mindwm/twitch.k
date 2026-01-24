@@ -36,9 +36,9 @@ makeMenuTwitchStreamer = lambda streamer : any -> kando.Child {
             icon = "✂️"
             children = [
               utils.makeURI({
-                name = "24h"
+                name = "24hr"
                 icon = "🕒"
-                uri = "https://www.twitch.tv/${streamer.broadcaster}/clips?filter=clips&range=24h"
+                uri = "https://www.twitch.tv/${streamer.broadcaster}/clips?filter=clips&range=24hr"
               })
               utils.makeURI({
                 name = "7d"
