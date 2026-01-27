@@ -7,7 +7,7 @@ source "$SCRIPT_DIR/utils.sh"
 
 ssh_tmux_session_list() {
     local ssh_hostname=$1
-    ssh -o ConnectTimeout=2 ${ssh_hostname} 'tmux list-sessions \; list-windows -a' \
+    ssh -o ConnectTimeout=2 ${ssh_hostname} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null 'tmux list-sessions \; list-windows -a' \
     | awk '
     BEGIN {
       print "      tmux_sessions:"
