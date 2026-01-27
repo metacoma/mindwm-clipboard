@@ -9,7 +9,7 @@ grep_urls() {
 
 get_clip_info() {
   local clip_url=$1
-  ~/bin/twitch-dl info $slug_id "${clip_url}" --json | jq '{
+  ~/bin/twitch-dl --no-verbose info $slug_id "${clip_url}" --json | jq '{
   slug: (.slug // ""),
   title: (.title // ""),
   createdAt: (.createdAt // ""),
@@ -31,6 +31,7 @@ for url in $URLS;  do
   clip_info=$(get_clip_info ${url})
   y "-"
   push
-  echo ${clip_info} | yq -y | sed "s/^/$(printf '%*s' $INDENT)/"
+  echo ${clip_info} | yq -y | sed "s/^/$(printf '%*s' $INDENT)/" || :
   pop
 done
+exit 0
