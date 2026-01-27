@@ -6,15 +6,15 @@ PATH=${PATH}:~/bin:$(pwd)/bin
 case $1 in
     clipboard)
         notify_selection=clipboard
-        xclip_selection=--primary
+        xclip_selection=primary
     ;;
     qt)
         notify_selection=clipboard
-        xclip_selection=--clipboard
+        xclip_selection=clipboard
     ;;
     primary)
         notify_selection=primary
-        xclip_selection=--primary
+        xclip_selection=primary
     ;;
 esac
 
@@ -24,7 +24,7 @@ while clipnotify -s ${notify_selection}; do
         rm /tmp/skip_next_clipboard
         continue
     }
-    xclip ${xclip_selection} -o | tee | bin/filter.sh > /tmp/clipboard.txt
+    xclip -selection ${xclip_selection} -o | tee | bin/filter.sh > /tmp/clipboard.txt
     tmpdir="$(mktemp -d)"
     export tmpdir
     rm input.yaml
@@ -37,7 +37,7 @@ while clipnotify -s ${notify_selection}; do
       cp ./menus.json ${CHECKSUM_FILE}
       mv menus.json ~/.config/kando/menus.json
       kando -m root &
-      cat ${CHECKSUM_FILE} | ./run_scripts.sh posthooks ${CHECKSUM_FILE}
+      cat ${CHECKSUM_FILE} | ./run_scripts.sh posthooks ${tmpdir}
 
     fi
 done
