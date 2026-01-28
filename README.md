@@ -1,3 +1,11 @@
+Kando + EWW bar
+
+
+
+
+https://github.com/user-attachments/assets/fb97cb08-e83a-4cca-98ae-c46daeacf3e8
+
+
 Mindmap backend
 
 https://github.com/user-attachments/assets/f5dc57ba-a917-4034-aa0d-c96a5dbcabae
