@@ -42,13 +42,8 @@ json:
   - path: ${TMP_FILE}
 EOF
    ;;
-   "ASCII text")
-cat<<EOF
-text:
-  - path: ${TMP_FILE}
-EOF
-   ;;
-   "Unicode text, UTF-8 text")
+   "ASCII text"|"Unicode text, UTF-8 text")
+    (( $(wc -l < "${TMP_FILE}") < 40 )) && exit 0
 cat<<EOF
 text:
   - path: ${TMP_FILE}

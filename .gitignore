@@ -1,2 +1,4 @@
 handlers/mindmap/.venv
 handelrs/mindmap/__pycache__/*
+.env
+handlers/work/**

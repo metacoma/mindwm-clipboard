@@ -11,9 +11,21 @@ schema File:
 
 schema JsonFile(File):
   content: str = "json"
+  icon = lambda -> str {
+    "📄"
+  }
 
 schema YamlFile(File):
   content: str = "yaml"
+  icon = lambda -> str {
+    "📑"
+  }
+
+schema TextFile(File):
+  content: str = "text"
+  icon = lambda -> str {
+    "📜"
+  }
 
 makeMenuExplore = lambda f : any -> [kando.Child] {
   [
@@ -101,6 +113,20 @@ makeMenuYamlFile = lambda f : YamlFile -> kando.Child {
         name = "Explore"
         icon = "🔍"
         children = makeMenuExplore(f)
+      })
+    ]
+  })
+}
+
+makeMenuTextFile = lambda f : any -> kando.Child {
+  utils.makeSubmenu({
+    name = "Text"
+    icon = f.icon()
+    children = [
+      utils.makeCommand({
+        name = "as Mindmap(AI)"
+        icon = "🗺️"
+        cmd = utils.runTerminal("cat ${f.path} | /home/bebebeka/git/mindmap_llm_clipboard/stdin.sh")
       })
     ]
   })

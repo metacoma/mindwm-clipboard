@@ -66,6 +66,14 @@ object_by_type = lambda t : str, obj: any -> any {
       for _file in obj
     ]
 
+  if t == "text":
+    r = [
+      content.TextFile {
+        path = _file.path
+      }
+      for _file in obj
+    ]
+
   if t == "domain":
     r = [
       domain.make(_domain, _all_objects)
@@ -100,6 +108,8 @@ child = lambda obj : any -> kando.Child {
     child = content.makeMenuJsonFile(obj)
   if typeof(obj) == "YamlFile":
     child = content.makeMenuYamlFile(obj)
+  if typeof(obj) == "TextFile":
+    child = content.makeMenuTextFile(obj)
   if typeof(obj) == "Domain":
     child = domain.makeMenu(obj, _all_objects)
   if typeof(obj) == "Node":
