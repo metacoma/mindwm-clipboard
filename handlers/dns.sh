@@ -3,7 +3,27 @@
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/utils.sh"
 
-domains=$(grep -oE '([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}' | xargs -n1 | sort -u)
+extract_real_domains() {
+  local TLD_FILE="${1:-${SCRIPT_DIR}/tlds-alpha-by-domain.txt}"
+
+  grep -aoE '([A-Za-z0-9-]+\.)+[A-Za-z]{2,}\.?' \
+  | tr 'A-Z' 'a-z' \
+  | sed 's/\.$//' \
+  | sort -u \
+  | awk -F. -v tldfile="$TLD_FILE" '
+      BEGIN {
+        while ((getline t < tldfile) > 0) {
+          if (t ~ /^#/) continue
+          T[tolower(t)] = 1
+        }
+      }
+      {
+        if (T[$NF]) print
+      }
+    '
+}
+
+domains=$(extract_real_domains)
 all_ips=""
 
 test -n "${domains}" || exit 0
