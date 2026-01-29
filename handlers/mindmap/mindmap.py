@@ -81,6 +81,7 @@ class Node(BaseModel):
     note: Optional[str] = None
     icons: Optional[List[str]] = None
     icon: Optional[str] = None
+    link: Optional[str] = None
 
     model_config = ConfigDict(extra = "ignore")
 

@@ -11,6 +11,7 @@ schema Node:
   detail?: str
   children: [Node] = []
   note?: str
+  link?: str
   iconTheme = lambda -> str {
     r = "material-symbols-rounded"
     if icon().startswith("data:image/"):
@@ -42,6 +43,8 @@ make = lambda obj: any, all_objects: any -> Node {
       attributes = obj.attributes
     if obj.detail:
       detail = obj.detail
+    if obj.link:
+      link = obj.link
     children = [
       make(child, all_objects)
       for child in obj.children
@@ -67,6 +70,12 @@ makeMenu = lambda node -> kando.Child {
         icon = "🗺️"
         cmd = "/home/bebebeka/git/freeplane_plugin_grpc/grpc/shell/centerNode.sh ${node.id}"
       })
+      if node.link:
+        utils.makeCommand({
+          name = "url"
+          icon = "🌍"
+          cmd = "xdg-open ${node.link}"
+        })
     ]
   }
 }
