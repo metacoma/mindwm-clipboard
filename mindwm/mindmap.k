@@ -49,12 +49,6 @@ make = lambda obj: any, all_objects: any -> Node {
   }
 }
 
-#makeChildren = lambda xxx : [Node] -> [kando.Child] {
-#  {
-#
-#  }
-#}
-
 nodeIcon = lambda node : Node -> any {
   iconTheme = "base64"
 }
@@ -68,11 +62,11 @@ makeMenu = lambda node -> kando.Child {
       makeMenu(child)
       for child in node.children
     ] + [
-      #if (node.detail):
-      #  utils.showEmoji(
-      #    title = "detail"
-      #    emoji = "🏙️"
-      #  )
+      utils.makeCommand({
+        name = "open"
+        icon = "🗺️"
+        cmd = "/home/bebebeka/git/freeplane_plugin_grpc/grpc/shell/centerNode.sh ${node.id}"
+      })
     ]
   }
 }
