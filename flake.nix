@@ -20,7 +20,7 @@
         devShells.default = pkgs.mkShell {
           packages = [ ];
           buildInputs = with pkgs; [
-            kando
+            kando eww
             ipcalc dnsutils libmaxminddb
             jq yq xq
             freeplane
