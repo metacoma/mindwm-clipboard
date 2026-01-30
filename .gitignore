@@ -2,3 +2,5 @@
 __pycache__/
 .env
 handlers/cmdb/names.txt
+handlers/work/**
+.direnv/
