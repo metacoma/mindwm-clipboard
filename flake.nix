@@ -23,6 +23,8 @@
             ipcalc dnsutils libmaxminddb
             jq yq xq
             freeplane
+            twitch-dl
+            xclip clipnotify
           ] ++ (with pkgs.python3.pkgs; [
               grpcio
               protobuf
