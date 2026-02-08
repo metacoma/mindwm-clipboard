@@ -11,7 +11,7 @@ import yaml
 from typing import Iterator
 
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, Field
 from pydantic import ConfigDict, model_validator
 
@@ -22,6 +22,33 @@ from pathlib import Path
 
 import base64
 from pathlib import Path
+
+
+
+def should_skip(dir_path: Union[str, Path]) -> bool:
+    """
+    Return True if directory should be skipped:
+    - window.json exists
+    - process.cmdline contains 'freeplane'
+    """
+    path = Path(dir_path)
+    window_file = path / "window.json"
+
+    if not window_file.is_file():
+        return False
+
+    try:
+        data = json.loads(window_file.read_text(encoding="utf-8"))
+    except Exception:
+        return False
+
+    cmdline = (
+        data
+        .get("process", {})
+        .get("cmdline", "")
+    )
+
+    return "freeplane" in cmdline.lower()
 
 
 def icon_to_representation(icon: str, icons_dir: str = "icons") -> str | None:
@@ -116,6 +143,8 @@ def search_to_json(root: Node, keyword: str) -> str:
 
     return results
 
+if should_skip(sys.argv[1]):
+    sys.exit(0)
 
 
 #Node.model_rebuild()
