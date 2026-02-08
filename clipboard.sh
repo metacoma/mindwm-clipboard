@@ -26,7 +26,7 @@ while clipnotify -s ${notify_selection}; do
     }
     xclip -selection ${xclip_selection} -o | tee | bin/filter.sh > /tmp/clipboard.txt
     tmpdir="$(mktemp -d)"
-    bin/window_info.sh > ${tmp_dir}/window.json
+    bin/window_info.sh > ${tmpdir}/window.json
     export tmpdir
     rm input.yaml
     cat /tmp/clipboard.txt | ./run_scripts.sh handlers ${tmpdir}
