@@ -5,7 +5,7 @@ TMP_FILE=/tmp/new_clipboard.txt
 cat > ${TMP_FILE}
 
 touch /tmp/skip_next_clipboard
-cat ${TMP_FILE} | xclip -i -selection primary
+cat ${TMP_FILE} | xclip -i -selection clipboard
 
 cat ${TMP_FILE}  | osd_cat \
     --pos=middle \
