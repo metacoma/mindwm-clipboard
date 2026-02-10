@@ -1,3 +1,9 @@
+# Quick start
+This project uses the [Nix](https://nixos.org/) package manager to prepare
+the development environment. Just type `nix develop` to fetch all dependencies
+and start a new shell, or use the [direnv](https://direnv.net/) tool, via `direnv allow`
+to switch to the development shell.
+
 Kando + EWW bar
 
 
