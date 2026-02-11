@@ -6,6 +6,7 @@ import mindwm.twitch as twitch
 import mindwm.content as content
 import mindwm.domain as domain
 import mindwm.mindmap as mindmap
+import mindwm.book as book
 import file
 import yaml
 
@@ -86,6 +87,12 @@ object_by_type = lambda t : str, obj: any -> any {
       for _node in obj
     ]
 
+  if t == "book":
+    r = [
+      book.make(_book, _all_objects)
+      for _book in obj
+    ]
+
   r
 }
 
@@ -114,6 +121,8 @@ child = lambda obj : any -> kando.Child {
     child = domain.makeMenu(obj, _all_objects)
   if typeof(obj) == "Node":
     child = mindmap.makeMenu(obj)
+  if typeof(obj) == "Book":
+    child = book.makeMenu(obj)
   child
 }
 
@@ -169,7 +178,6 @@ kando.Config {
 
 
 
-#t = _objects[0]
 #mindmap.p(t)
 
 #n = mindmap.make(_all_objects["mindmap"][0], _all_objects)

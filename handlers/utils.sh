@@ -25,6 +25,10 @@ reset_indent() {
   INDENT=0
 }
 
+window_title() {
+  cat ${tmpdir}/window.json | jq -r '.wm_name'
+}
+
 if [ -n "$2" ]; then
   y "\"$2\":"
   push
