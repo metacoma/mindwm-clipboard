@@ -7,6 +7,8 @@ source "$SCRIPT_DIR/utils.sh"
 egrep -qi -f <(cat <<'EOF'
 /bo/
 /sf/
+/fs/
+/lit/
 goodreads
 EOF
 ) <<<"$(window_title)" || exit 0
