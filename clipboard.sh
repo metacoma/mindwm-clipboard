@@ -35,7 +35,7 @@ while clipnotify -s ${notify_selection}; do
       continue
     }
 
-    xclip -selection ${xclip_selection} -o | tee | bin/filter.sh > /tmp/clipboard.txt
+    xclip -selection ${xclip_selection} -o | tee | bin/filter.sh | tee ${tmpdir}/clipboard.txt > /tmp/clipboard.txt
 
     rm input.yaml
     cat /tmp/clipboard.txt | ./run_scripts.sh handlers ${tmpdir}
