@@ -11,6 +11,8 @@ goodreads
 EOF
 ) <<<"$(window_title)" || exit 0
 
+grep -q "/res/" ${tmpdir}/clipboard.txt && exit 0
+
 y "book:"
 push
 while IFS= read -r line || [[ -n "$line" ]]; do
