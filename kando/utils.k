@@ -82,7 +82,7 @@ makeURI = lambda args : any -> kando.Uri {
 }
 
 runTerminal = lambda cmd : any -> str {
-  run_cmd = "xterm -e sh -c '${cmd}'"
+  run_cmd = "xterm -u8 -fa 'JetBrains Mono' -fs 11      -bg '#1e1e1e' -fg '#d4d4d4'   -xrm 'XTerm*termName: xterm-256color' -e sh -c '${cmd}'"
   if (config.terminal == "gnome-terminal"):
     run_cmd = "gnome-terminal -- sh -c '${cmd}'"
   run_cmd

@@ -1,1 +1,1 @@
-terminal = "gnome-terminal"
+terminal = "xterm"
