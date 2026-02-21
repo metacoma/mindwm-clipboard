@@ -1,5 +1,13 @@
 __kando_version = "2.2.0-beta.1"
 
+makeIconTheme = lambda icon -> str {
+  r = __defaults.iconTheme
+  if icon.startswith("data:image"):
+    r = "base64"
+  r
+
+}
+
 __defaults = {
   iconTheme = "material-symbols-rounded"
   icon = "award_star"
@@ -25,7 +33,7 @@ schema Child:
   "type": str = __defaults.type
   name: str
   icon?: str = __defaults.icon
-  iconTheme?: str = __defaults.iconTheme
+  iconTheme = makeIconTheme(icon)
   children?: [Child]
 
 schema Submenu(Child):
