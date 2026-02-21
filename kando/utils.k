@@ -1,19 +1,23 @@
 import .schema as kando
 import config as config
+import file
+import base64
+import kando.images as images
 
 schema SubMenuArgs:
   name: str
   icon?: str = "🕸️"
   children: [kando.Child]
 
-makeSubmenu = lambda arg : SubMenuArgs -> kando.Child {
+makeSubmenu = lambda args : SubMenuArgs -> kando.Child {
   {
     type = "submenu"
-    name = arg.name
-    icon = arg.icon
-    "children" = arg.children
+    name = args.name
+    icon = args.icon
+    "children" = args.children
   }
 }
+
 
 makeCommand = lambda args : any -> kando.Command {
   {
@@ -35,22 +39,22 @@ makeCopyAction = lambda text : str -> kando.Command {
   })
 }
 
+makeIcon = lambda icon : str -> str {
+  "data:image/png;base64," + icon
+}
+
 insertText = lambda args : any -> kando.Command {
   makeCommand({
     name = args.name
     cmd = "xdotool type \"${args.cmd}\""
     if args.cmd.startswith("ping "):
       icon = "🏓"
-      iconTheme = "emoji"
     if args.cmd.startswith("traceroute "):
       icon = "🧭"
-      iconTheme = "emoji"
     if args.cmd.startswith("ssh "):
       icon = "🖥️"
-      iconTheme = "emoji"
     if args.icon:
       icon = args.icon
-      iconTheme = "emoji"
 
   })
 }
@@ -60,9 +64,9 @@ showEmoji = lambda title : str, emoji  : str -> kando.Command {
     name = title
     cmd = ""
     icon = emoji
-    iconTheme = emoji
   })
 }
+
 
 showText = lambda args : any -> kando.Text {
   kando.Text {
@@ -88,13 +92,52 @@ runTerminal = lambda cmd : any -> str {
   run_cmd
 }
 
+
+makeTelegramContact = lambda args : any -> kando.Uri {
+  kando.Uri {
+    name = args.name
+    icon = makeIcon(images.TELEGRAM)
+    data.uri = "https://t.me/{args.telegram}"
+  }
+}
+
+makeJiraUrl = lambda args : any -> kando.Uri {
+  kando.Uri {
+    name = args.name
+    icon = makeIcon(images.JIRA)
+    data.uri = args.url
+  }
+}
+
+operatingSystemIcon = lambda os : str -> str {
+    icon = None
+    if os == "Windows":
+      icon = makeIcon(images.windows)
+    if os == "Linux":
+      icon = makeIcon(images.linux)
+    if os == "FortiOS":
+      icon = makeIcon(images.fortios)
+    str(icon)
+
+}
+
+
+showOperatingSystem = lambda name : str -> kando.Text {
+  kando.Text {
+    name = name
+    icon = operatingSystemIcon(name)
+    data.text = name
+  }
+}
+
+
+
 country_icon = lambda country -> str {
   icon = "📍"
   if (country):
       icon = country_flag[country]
   icon
 }
-
 
 country_flag = {
     "AD": "🇦🇩", "AE": "🇦🇪", "AF": "🇦🇫", "AG": "🇦🇬", "AI": "🇦🇮",
