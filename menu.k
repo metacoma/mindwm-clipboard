@@ -106,6 +106,12 @@ object_by_type = lambda t : str, obj: any -> any {
       for _host in obj
     ]
 
+  if t == "cmdb.san_rack_switch":
+    r = [
+      cmdb.makeSanRackSwitch(_host, _all_objects)
+      for _host in obj
+    ]
+
   r
 }
 

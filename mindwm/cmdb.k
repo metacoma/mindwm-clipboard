@@ -262,3 +262,38 @@ makeHostMenu = lambda host : any -> kando.Child {
     ]
   }
 }
+
+schema SanRackSwitch(Object):
+  dc?: DC
+  networkInterface?: [ipv4.Ip4] = []
+  team?: Team
+  owner?: User
+  serial?: str
+  rack_id?: str
+  model?: str
+  icon = lambda -> str {
+    "⚙️"
+  }
+
+makeSanRackSwitch = lambda obj: any, all_objects : any -> SanRackSwitch {
+  SanRackSwitch {
+    name = obj.name
+    selfUrl = obj.selfUrl
+    if obj.location:
+      dc = makeDC(obj.location, all_objects)
+    if obj.networkInterface:
+      networkInterface = [
+        if "Ip {ip}" in all_objects:
+          ipv4.make(all_objects["Ip ${ip.ip}"]["ip4"][0])
+        else:
+          ipv4.make({
+            name = ip
+          })
+        for ip in obj.networkInterface
+      ]
+
+    if obj.owner:
+      owner = makeUser(obj.owner, all_objects)
+    team = obj.team
+  }
+}
