@@ -65,7 +65,6 @@ showEmoji = lambda title : str, emoji  : str -> kando.Command {
   })
 }
 
-
 showText = lambda args : any -> kando.Child {
   makeSubmenu({
     name = args.text

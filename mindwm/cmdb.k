@@ -184,15 +184,10 @@ makeHost = lambda obj: any, all_objects : any -> Host {
     if obj.location:
       dc = makeDC(obj.location, all_objects)
     if obj.networkInterface:
-      if typeof(obj.networkInterface) == "str":
-        networkInterface = [
-          ipv4.makeRefIp(obj.networkInterface, all_objects)
-        ]
-      # if typeof(obj.networkInterface) == list:
-      #   networkInterface = [
-      #   ipv4.make(all_objects["Ip ${ip.ip}"]["ip4"][0])
-      #   for ip in obj.networkInterface
-      # ]
+      networkInterface = [
+        ipv4.makeRefIp(ip, all_objects)
+        for ip in obj.networkInterface
+      ]
 
     if obj.owner:
       owner = makeUser(obj.owner, all_objects)
@@ -218,7 +213,6 @@ makeHostMenu = lambda host : any -> kando.Child {
         utils.makeSubmenu({
           name = "VIP: ${host.vipIp.ip}"
           icon = host.vipIp.icon()
-
           children = ipv4.makeMenu(host.vipIp).children
         })
       if host.team:
@@ -243,9 +237,8 @@ makeHostMenu = lambda host : any -> kando.Child {
       #   utils.showOperatingSystem(host.os)
       if host.service:
         utils.showText({
-          name = host.service
+          text = host.service
           icon = "⚙️"
-          text = ""
         })
     ] + [
         # utils.showText({
