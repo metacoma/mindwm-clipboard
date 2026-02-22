@@ -8,7 +8,7 @@ import utils
 from dotenv import load_dotenv
 from colorama import Fore, Style
 import pprint
-from model import ObjectEntry,JiraTypes,DataCenter,Host,User,SanRackSwitch
+from model import ObjectEntry,JiraTypes,DataCenter,Host,User,SanRackSwitch,Firewall
 import yaml
 
 import logging
@@ -57,6 +57,7 @@ if __name__ == "__main__":
     datacenters = []
     users = []
     san_rack_switch = []
+    firewall = []
 
     all_results = utils.execute_aql_query(aql_query)
     objects = [ObjectEntry.model_validate(o) for o in all_results["objectEntries"]]
@@ -78,6 +79,9 @@ if __name__ == "__main__":
             switch = SanRackSwitch.model_validate(obj.model_dump(by_alias=True))
             san_rack_switch.append(switch)
 
+        if obj.get_type() == JiraTypes.FIREWALL:
+            switch = Firewall.model_validate(obj.model_dump(by_alias=True))
+            firewall.append(switch)
 
 
     if datacenters:
@@ -95,6 +99,11 @@ if __name__ == "__main__":
     if san_rack_switch:
         output = {"cmdb.san_rack_switch": [switch.model_dump(mode="json") for switch in san_rack_switch]}
         print(yaml.safe_dump(output, allow_unicode=True, sort_keys=False))
+
+    if firewall:
+        output = {"cmdb.firewall": [switch.model_dump(mode="json") for switch in firewall]}
+        print(yaml.safe_dump(output, allow_unicode=True, sort_keys=False))
+
 
 
     #print(all_results)

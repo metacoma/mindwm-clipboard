@@ -24,6 +24,7 @@ os.makedirs(CACHE_DIR, exist_ok=True)
 
 class JiraTypes(StrEnum):
     SAN_RACK_SWITCH = "SAN Rack Switch"
+    FIREWALL = "Firewall"
 
 class JiraAttributeID(IntEnum):
     #dc
@@ -32,14 +33,22 @@ class JiraAttributeID(IntEnum):
     STATUS = 73044
     NUMBER = 16880
     DC_DOC = 16886
+
     #host
     HOST_LOCATION = 19284
-    HOST_NETWORK_INTERFACE = 54993
+    NETWORK_INTERFACE = 54993
     HOST_OWNER = 75572
     HOST_OS = 78843
     HOST_SERVICE = 19394
     HOST_VIP_IP = 56556
     HOST_TEAM = 55217
+    HOST_MODEL = 56309
+
+    HW_SERIAL = 19094
+    HW_LOCATION = 19284
+    HW_RACK = 19299
+    HW_START_UNIT = 55345
+    HW_UNIT_SIZE = 55344
 
     # user
     USER_ATTR_ID = 78466
@@ -48,17 +57,6 @@ class JiraAttributeID(IntEnum):
 
     #team
     TEAM_USERS = 78505
-
-    #san rack switch
-    SAN_RACK_SWITCH_LOCATION = 19284
-    SAN_RACK_SWITCH_SERIAL = 19094
-    SAN_RACK_SWITCH_NETWORK_INTERFACE = 54993
-    SAN_RACK_SWITCH_TEAM = 55217
-    SAN_RACK_SWITCH_OWNER = 75572
-    SAN_RACK_SWITCH_MODEL = 56309
-    SAN_RACK_SWITCH_RACK = 19299
-    SAN_RACK_SWITCH_START_UNIT = 55345
-    SAN_RACK_SWITCH_UNIT_SIZE = 55344
 
 class ObjectAttributeValue(BaseModel):
     model_config = ConfigDict(extra="allow")
@@ -258,6 +256,14 @@ class Team(ObjectEntry):
         }
 
 class InfrastructureNode(ObjectEntry):
+    assetId: ClassVar[dict[str, int]] = {
+        "networkInterface": JiraAttributeID.NETWORK_INTERFACE,
+        "location": JiraAttributeID.HW_LOCATION,
+        "serial": JiraAttributeID.HW_SERIAL,
+        "team": JiraAttributeID.HOST_TEAM,
+        "owner": JiraAttributeID.HOST_OWNER,
+        "model": JiraAttributeID.HOST_MODEL,
+    }
     @computed_field
     @property
     def name(self) -> str:
@@ -309,6 +315,13 @@ class InfrastructureNode(ObjectEntry):
         return None
 
 class PhysicalInfrastructureNode(InfrastructureNode):
+    assetId: ClassVar[dict[str, int]] = {
+        **InfrastructureNode.assetId,
+        "serial": JiraAttributeID.HW_SERIAL,
+        "startUnit": JiraAttributeID.HW_START_UNIT,
+        "size": JiraAttributeID.HW_UNIT_SIZE,
+        "rackId" : JiraAttributeID.HW_RACK
+    }
     @computed_field
     @property
     def serial(self) -> str|None:
@@ -337,7 +350,7 @@ class PhysicalInfrastructureNode(InfrastructureNode):
 class Host(InfrastructureNode):
     assetId = {
         "location": JiraAttributeID.HOST_LOCATION,
-        "networkInterface": JiraAttributeID.HOST_NETWORK_INTERFACE,
+        "networkInterface": JiraAttributeID.NETWORK_INTERFACE,
         "owner": JiraAttributeID.HOST_OWNER,
         "team": JiraAttributeID.HOST_TEAM,
         "os": JiraAttributeID.HOST_OS,
@@ -486,17 +499,35 @@ class User(ObjectEntry):
     pass
 
 class SanRackSwitch(PhysicalInfrastructureNode):
-    assetId = {
-        "location": JiraAttributeID.SAN_RACK_SWITCH_LOCATION,
-        "networkInterface": JiraAttributeID.SAN_RACK_SWITCH_NETWORK_INTERFACE,
-        "owner": JiraAttributeID.SAN_RACK_SWITCH_OWNER,
-        "team": JiraAttributeID.SAN_RACK_SWITCH_TEAM,
-        "serial": JiraAttributeID.SAN_RACK_SWITCH_SERIAL,
-        "model": JiraAttributeID.SAN_RACK_SWITCH_MODEL,
-        "startUnit": JiraAttributeID.SAN_RACK_SWITCH_START_UNIT,
-        "size": JiraAttributeID.SAN_RACK_SWITCH_UNIT_SIZE,
-        "rackId" : JiraAttributeID.SAN_RACK_SWITCH_RACK
-    }
+    # assetId = {
+    #     "location": JiraAttributeID.HW_LOCATION,
+    #     "networkInterface": JiraAttributeID.NETWORK_INTERFACE,
+    #     "owner": JiraAttributeID.HOST_OWNER,
+    #     "team": JiraAttributeID.HOST_TEAM,
+    #     #"serial": JiraAttributeID.HW_SERIAL,
+    #     "model": JiraAttributeID.HOST_MODEL,
+    #     #"startUnit": JiraAttributeID.HW_START_UNIT,
+    #     #"size": JiraAttributeID.HW_UNIT_SIZE,
+    #     "rackId" : JiraAttributeID.HW_RACK
+    # }
+    @model_serializer(mode="wrap")
+    def _serialize(self, serializer):
+        base: Dict[str, Any] = serializer(self)
+        return {
+            "name": self.get_attr_value("Name") or self.label,
+            "created": self.created,
+            "updated": self.updated,
+            "location": self.location,
+            "networkInterface": self.networkInterface,
+            "team": self.team,
+            "owner": self.owner,
+            "rackId": self.rackId,
+            "model": self.model,
+            "serial": self.serial,
+            "selfUrl": self.selfUrl,
+        }
+
+class Firewall(PhysicalInfrastructureNode):
     @model_serializer(mode="wrap")
     def _serialize(self, serializer):
         base: Dict[str, Any] = serializer(self)
@@ -585,7 +616,14 @@ def get_host(host_name : str) -> Host | None:
 
 def get_san_rack_switch(switch_name : str) -> Host | None:
     logging.info(f"{switch_name}")
-    r = safe_object_query(f'objectSchemaId IN "{cmdb_id}" AND objectType = "{JiraTypes.SAN_RACK_SWITCH}" AND Name = "{switch_name}"')
+    r = safe_object_query(f'objectSchemaId IN "{cmdb_id}" AND objectType = "{JiraTypes.SAN_HW_RACK_SWITCH}" AND Name = "{switch_name}"')
     if (r):
         return SanRackSwitch.model_validate(r)
+    return None
+
+def get_firewall(firewall_name : str) -> Host | None:
+    logging.info(f"{firewall_name}")
+    r = safe_object_query(f'objectSchemaId IN "{cmdb_id}" AND objectType = "{JiraTypes.FIREWALL}" AND Name = "{firewall_name}"')
+    if (r):
+        return Firewall.model_validate(r)
     return None
