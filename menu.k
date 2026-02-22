@@ -7,7 +7,11 @@ import mindwm.content as content
 import mindwm.domain as domain
 import mindwm.mindmap as mindmap
 import mindwm.book as book
-import mindwm.cmdb as cmdb
+import mindwm.cmdb.host as host
+import mindwm.cmdb.datacenter as datacenter
+import mindwm.cmdb.team as team
+import mindwm.cmdb.user as user
+import mindwm.cmdb.hosts.san_rack_switch as san_rack_switch
 import file
 import yaml
 
@@ -96,19 +100,19 @@ object_by_type = lambda t : str, obj: any -> any {
 
   if t == "cmdb.user":
     r = [
-      cmdb.makeUser(_user, _all_objects)
+      user.make(_user, _all_objects)
       for _user in obj
     ]
 
   if t == "cmdb.host":
     r = [
-      cmdb.makeHost(_host, _all_objects)
+      host.make(_host, _all_objects)
       for _host in obj
     ]
 
   if t == "cmdb.san_rack_switch":
     r = [
-      cmdb.makeSanRackSwitch(_host, _all_objects)
+      san_rack_switch.make(_host, _all_objects)
       for _host in obj
     ]
 
@@ -143,11 +147,11 @@ child = lambda obj : any -> kando.Child {
   if typeof(obj) == "Book":
     child = book.makeMenu(obj)
   if typeof(obj) == "User":
-    child = cmdb.makeUserMenu(obj)
+    child = user.makeMenu(obj)
   if typeof(obj) == "Host":
-    child = cmdb.makeHostMenu(obj)
+    child = host.makeMenu(obj)
   if typeof(obj) == "SanRackSwitch":
-    child = cmdb.makeSanRackSwitchMenu(obj)
+    child = san_rack_switch.makeMenu(obj)
   child
 }
 
