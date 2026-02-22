@@ -1,5 +1,5 @@
 from __future__ import annotations
-from enum import IntEnum
+from enum import IntEnum,StrEnum
 
 from typing import Any, List, Optional, Dict
 from pydantic import BaseModel, Field, ConfigDict,  model_serializer,  computed_field
@@ -22,6 +22,8 @@ CACHE_TTL = 60 * 60 * 24  # 1 day
 
 os.makedirs(CACHE_DIR, exist_ok=True)
 
+class JiraTypes(StrEnum):
+    SAN_RACK_SWITCH = "SAN Rack Switch"
 
 class JiraAttributeID(IntEnum):
     #dc
@@ -411,6 +413,18 @@ class User(ObjectEntry):
     pass
 
 
+class SanRackSwitch(ObjectEntry):
+    @model_serializer(mode="wrap")
+    def _serialize(self, serializer):
+        base: Dict[str, Any] = serializer(self)
+        return {
+            "name": self.get_attr_value("Name") or self.label,
+            "selfUrl": self.selfUrl,
+            "created": self.created,
+            "updated": self.updated,
+        }
+
+
 # utils
 def _cache_path(key: str) -> str:
     h = hashlib.sha256(key.encode()).hexdigest()
@@ -477,4 +491,11 @@ def get_host(host_name : str) -> Host | None:
     r = safe_object_query(f'objectSchemaId IN "{cmdb_id}" AND objectType = "Host" AND Name = "{host_name}"')
     if (r):
         return Host.model_validate(r)
+    return None
+
+def get_san_rack_switch(switch_name : str) -> Host | None:
+    logging.info(f"{switch_name}")
+    r = safe_object_query(f'objectSchemaId IN "{cmdb_id}" AND objectType = "{JiraTypes.SAN_RACK_SWITCH}" AND Name = "{switch_name}"')
+    if (r):
+        return SanRackSwitch.model_validate(r)
     return None

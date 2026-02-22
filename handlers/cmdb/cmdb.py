@@ -8,7 +8,7 @@ import utils
 from dotenv import load_dotenv
 from colorama import Fore, Style
 import pprint
-from model import ObjectEntry,DataCenter,Host,User
+from model import ObjectEntry,JiraTypes,DataCenter,Host,User,SanRackSwitch
 import yaml
 
 import logging
@@ -56,6 +56,7 @@ if __name__ == "__main__":
     hosts = []
     datacenters = []
     users = []
+    san_rack_switch = []
 
     all_results = utils.execute_aql_query(aql_query)
     objects = [ObjectEntry.model_validate(o) for o in all_results["objectEntries"]]
@@ -72,6 +73,12 @@ if __name__ == "__main__":
         if obj.get_type() == "User":
             user = User.model_validate(obj.model_dump(by_alias=True))
             users.append(user)
+
+        if obj.get_type() == JiraTypes.SAN_RACK_SWITCH:
+            switch = SanRackSwitch.model_validate(obj.model_dump(by_alias=True))
+            san_rack_switch.append(switch)
+
+
 
     if datacenters:
         output = {"cmdb.dc": [dc.model_dump(mode="json") for dc in datacenters]}
