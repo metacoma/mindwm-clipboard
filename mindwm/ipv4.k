@@ -26,6 +26,17 @@ make = lambda obj: any -> Ip4 {
   }
 }
 
+makeRefIp = lambda ip : str, all_objects : any -> Ip4 {
+  r = None
+  if "Ip {ip}" in all_objects:
+    r = make(all_objects["Ip ${ip.ip}"]["ip4"][0])
+  else:
+    r = make({
+      ip = ip
+    })
+  r
+}
+
 makeMenu = lambda ip -> kando.Child {
   {
     name = ip.ip + ""
