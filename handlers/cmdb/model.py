@@ -54,6 +54,7 @@ class JiraAttributeID(IntEnum):
     SAN_RACK_SWITCH_SERIAL = 19094
     SAN_RACK_SWITCH_NETWORK_INTERFACES = 54993
     SAN_RACK_SWITCH_TEAM = 55217
+    SAN_RACK_SWITCH_OWNER = 75572
 
 class ObjectAttributeValue(BaseModel):
     model_config = ConfigDict(extra="allow")
@@ -430,7 +431,7 @@ class SanRackSwitch(ObjectEntry):
         return self.getAttributeValueById(JiraAttributeID.SAN_RACK_SWITCH_SERIAL)
     @computed_field
     @property
-    def networkInterfaces(self) -> str | None:
+    def networkInterfaces(self) -> List[str] | None:
         r = self.getAttributeValueById(JiraAttributeID.SAN_RACK_SWITCH_NETWORK_INTERFACES)
         if r:
             return r.split(" ")
@@ -443,6 +444,23 @@ class SanRackSwitch(ObjectEntry):
         if r:
             return get_team(r)
         return None
+
+    @computed_field
+    @property
+    def owner(self) -> User | None:
+        attr_obj = self.getAttributeValueById(JiraAttributeID.SAN_RACK_SWITCH_OWNER)
+        attr_obj = self.getAttributeById(JiraAttributeID.HOST_OWNER)
+
+        if not attr_obj:
+            return None
+
+        attr = attr_obj.model_dump()
+        values = attr.get("objectAttributeValues") or []
+        first = values[0] if values else {}
+
+        name = first.get("user", {}).get("displayName")
+        return get_user(name)
+
     @model_serializer(mode="wrap")
     def _serialize(self, serializer):
         base: Dict[str, Any] = serializer(self)
@@ -451,6 +469,7 @@ class SanRackSwitch(ObjectEntry):
             "location": get_dc(self.location) if self.location is not None else "",
             "network_interfaces": self.networkInterfaces,
             "team": self.team,
+            "owner": self.owner,
             "serial": self.serial,
             "selfUrl": self.selfUrl,
             "created": self.created,
