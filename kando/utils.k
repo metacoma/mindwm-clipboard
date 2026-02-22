@@ -34,7 +34,7 @@ makeCommand = lambda args : any -> kando.Command {
 makeCopyAction = lambda text : str -> kando.Command {
   makeCommand({
     name = "Copy"
-    cmd = "echo ${text} | copy_action.sh"
+    cmd = "echo ${text} | /home/bebebeka/spaces/mindwm/clipboard/bin/copy_action.sh"
     icon = "📋"
   })
 }
@@ -43,18 +43,33 @@ makeIcon = lambda icon : str -> str {
   "data:image/png;base64," + icon
 }
 
-insertText = lambda args : any -> kando.Command {
+makeInsertAction = lambda args : any -> kando.Command {
   makeCommand({
-    name = args.name
-    cmd = "xdotool type \"${args.cmd}\""
-    if args.cmd.startswith("ping "):
-      icon = "🏓"
-    if args.cmd.startswith("traceroute "):
-      icon = "🧭"
-    if args.cmd.startswith("ssh "):
-      icon = "🖥️"
+    if args.name:
+      name = args.name
+    else:
+      name = "Insert"
     if args.icon:
       icon = args.icon
+    else:
+      icon = "⤵️"
+    cmd = "xdotool type \"${args.text}\""
+  })
+}
+
+insertText = lambda args : any -> kando.Command {
+  makeCommand({
+    name = "Insert"
+    icon = "⤵️"
+    cmd = "xdotool type \"${args.text}\""
+    # if args.cmd.startswith("ping "):
+    #   icon = "🏓"
+    # if args.cmd.startswith("traceroute "):
+    #   icon = "🧭"
+    # if args.cmd.startswith("ssh "):
+    #   icon = "🖥️"
+    # if args.icon:
+    #   icon = args.icon
 
   })
 }
@@ -68,12 +83,15 @@ showEmoji = lambda title : str, emoji  : str -> kando.Command {
 }
 
 
-showText = lambda args : any -> kando.Text {
-  kando.Text {
-    name = args.name
+showText = lambda args : any -> kando.Child {
+  makeSubmenu({
+    name = args.text
     icon = args.icon
-    data.text = args.text
-  }
+    children = [
+      makeCopyAction(args.text)
+      makeInsertAction({ text = args.text })
+    ]
+  })
 }
 
 makeURI = lambda args : any -> kando.Uri {

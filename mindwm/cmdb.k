@@ -327,15 +327,13 @@ makeSanRackSwitchMenu = lambda switch : any -> kando.Child {
         })
       if switch.serial:
         utils.showText({
-          name = switch.serial
+          text = switch.serial
           icon = utils.makeIcon(images.SERIAL2)
-          text = ""
         })
       if switch.model:
         utils.showText({
-          name = switch.model
+          text = switch.model
           icon = utils.makeIcon(images.HW_MODEL)
-          text = ""
         })
     ] + [
       utils.makeSubmenu({
