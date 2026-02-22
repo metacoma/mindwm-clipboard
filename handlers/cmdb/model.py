@@ -469,7 +469,7 @@ class SanRackSwitch(ObjectEntry):
         return self.getAttributeValueById(JiraAttributeID.SAN_RACK_SWITCH_MODEL)
     @computed_field
     @property
-    def rack_str(self) -> str | None:
+    def rack_id(self) -> str | None:
         return self.getAttributeValueById(JiraAttributeID.SAN_RACK_SWITCH_RACK)
     @model_serializer(mode="wrap")
     def _serialize(self, serializer):
@@ -480,7 +480,7 @@ class SanRackSwitch(ObjectEntry):
             "network_interfaces": self.networkInterfaces,
             "team": self.team,
             "owner": self.owner,
-            "rack_str": self.rack_str,
+            "rack_id": self.rack_id,
             "model": self.model,
             "serial": self.serial,
             "selfUrl": self.selfUrl,
