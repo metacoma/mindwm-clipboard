@@ -477,7 +477,7 @@ class SanRackSwitch(ObjectEntry):
         return {
             "name": self.get_attr_value("Name") or self.label,
             "location": get_dc(self.location) if self.location is not None else "",
-            "network_interfaces": self.networkInterfaces,
+            "networkInterfaces": self.networkInterfaces,
             "team": self.team,
             "owner": self.owner,
             "rack_id": self.rack_id,

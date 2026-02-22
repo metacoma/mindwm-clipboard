@@ -186,7 +186,7 @@ makeHost = lambda obj: any, all_objects : any -> Host {
     if obj.networkInterface:
       if typeof(obj.networkInterface) == "str":
         networkInterface = [
-          ipv4.make(all_objects["Ip ${obj.networkInterface}"]["ip4"][0])
+          ipv4.makeRefIp(obj.networkInterface, all_objects)
         ]
       # if typeof(obj.networkInterface) == list:
       #   networkInterface = [
@@ -199,7 +199,7 @@ makeHost = lambda obj: any, all_objects : any -> Host {
     os = obj.os
     service = obj.service
     if obj.vipIp:
-      vipIp = ipv4.make(all_objects["Ip ${obj.vipIp}"]["ip4"][0])
+      vipIp = ipv4.makeRefIp(obj.vipIp, all_objects)
     team = obj.team
   }
 }
@@ -265,7 +265,7 @@ makeHostMenu = lambda host : any -> kando.Child {
 
 schema SanRackSwitch(Object):
   dc?: DC
-  networkInterface?: [ipv4.Ip4] = []
+  networkInterfaces?: [ipv4.Ip4] = []
   team?: Team
   owner?: User
   serial?: str
@@ -285,15 +285,10 @@ makeSanRackSwitch = lambda obj: any, all_objects : any -> SanRackSwitch {
       model = obj.model
     if obj.location:
       dc = makeDC(obj.location, all_objects)
-    if obj.networkInterface:
-      networkInterface = [
-        if "Ip {ip}" in all_objects:
-          ipv4.make(all_objects["Ip ${ip.ip}"]["ip4"][0])
-        else:
-          ipv4.make({
-            name = ip
-          })
-        for ip in obj.networkInterface
+    if obj.networkInterfaces:
+      networkInterfaces = [
+        ipv4.makeRefIp(ip, all_objects)
+        for ip in obj.networkInterfaces
       ]
 
     if obj.owner:
@@ -342,6 +337,13 @@ makeSanRackSwitchMenu = lambda switch : any -> kando.Child {
           icon = utils.makeIcon(images.HW_MODEL)
           text = ""
         })
+    ] + [
+      utils.makeSubmenu({
+        name = ip.ip
+        icon = ip.icon()
+        children = ipv4.makeMenu(ip).children
+      })
+      for ip in switch.networkInterfaces
     ]
   }
 }
