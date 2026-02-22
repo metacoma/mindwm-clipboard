@@ -616,7 +616,7 @@ def get_host(host_name : str) -> Host | None:
 
 def get_san_rack_switch(switch_name : str) -> Host | None:
     logging.info(f"{switch_name}")
-    r = safe_object_query(f'objectSchemaId IN "{cmdb_id}" AND objectType = "{JiraTypes.SAN_HW_RACK_SWITCH}" AND Name = "{switch_name}"')
+    r = safe_object_query(f'objectSchemaId IN "{cmdb_id}" AND objectType = "{JiraTypes.SAN_RACK_SWITCH}" AND Name = "{switch_name}"')
     if (r):
         return SanRackSwitch.model_validate(r)
     return None
