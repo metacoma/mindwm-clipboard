@@ -12,6 +12,7 @@ import mindwm.cmdb.datacenter as datacenter
 import mindwm.cmdb.team as team
 import mindwm.cmdb.user as user
 import mindwm.cmdb.hosts.san_rack_switch as san_rack_switch
+import mindwm.cmdb.hosts.firewall as firewall
 import file
 import yaml
 
@@ -116,6 +117,12 @@ object_by_type = lambda t : str, obj: any -> any {
       for _host in obj
     ]
 
+  if t == "cmdb.firewall":
+    r = [
+      firewall.make(_host, _all_objects)
+      for _host in obj
+    ]
+
   r
 }
 
@@ -152,6 +159,8 @@ child = lambda obj : any -> kando.Child {
     child = host.makeMenu(obj)
   if typeof(obj) == "SanRackSwitch":
     child = san_rack_switch.makeMenu(obj)
+  if typeof(obj) == "Firewall":
+    child = firewall.makeMenu(obj)
   child
 }
 
