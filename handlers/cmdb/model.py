@@ -55,6 +55,8 @@ class JiraAttributeID(IntEnum):
     SAN_RACK_SWITCH_NETWORK_INTERFACES = 54993
     SAN_RACK_SWITCH_TEAM = 55217
     SAN_RACK_SWITCH_OWNER = 75572
+    SAN_RACK_SWITCH_MODEL = 56309
+    SAN_RACK_SWITCH_RACK = 19299
 
 class ObjectAttributeValue(BaseModel):
     model_config = ConfigDict(extra="allow")
@@ -461,6 +463,14 @@ class SanRackSwitch(ObjectEntry):
         name = first.get("user", {}).get("displayName")
         return get_user(name)
 
+    @computed_field
+    @property
+    def model(self) -> str | None:
+        return self.getAttributeValueById(JiraAttributeID.SAN_RACK_SWITCH_MODEL)
+    @computed_field
+    @property
+    def rack_str(self) -> str | None:
+        return self.getAttributeValueById(JiraAttributeID.SAN_RACK_SWITCH_RACK)
     @model_serializer(mode="wrap")
     def _serialize(self, serializer):
         base: Dict[str, Any] = serializer(self)
@@ -470,6 +480,8 @@ class SanRackSwitch(ObjectEntry):
             "network_interfaces": self.networkInterfaces,
             "team": self.team,
             "owner": self.owner,
+            "rack_str": self.rack_str,
+            "model": self.model,
             "serial": self.serial,
             "selfUrl": self.selfUrl,
             "created": self.created,
