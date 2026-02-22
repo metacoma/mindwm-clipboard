@@ -1,7 +1,7 @@
 from __future__ import annotations
 from enum import IntEnum,StrEnum
 
-from typing import Any, List, Optional, Dict
+from typing import Any, List, Optional, Dict, ClassVar
 from pydantic import BaseModel, Field, ConfigDict,  model_serializer,  computed_field
 from datetime import datetime
 import pprint
@@ -92,6 +92,7 @@ class ObjectType(BaseModel):
 
 class ObjectEntry(BaseModel):
     model_config = ConfigDict(extra="allow")
+    #ID = Optional[Dict[str, int]]
 
     id: int
     label: Optional[str] = None
@@ -106,6 +107,8 @@ class ObjectEntry(BaseModel):
     attributes: Optional[List[ObjectAttribute]] = None
     objectAttributes: Optional[List[ObjectAttribute]] = None
 
+
+    assetId: ClassVar[Dict[str, int]] = {}
 
     def _attrs(self) -> List["ObjectAttribute"]:
         return self.attributes or self.objectAttributes or []
@@ -252,6 +255,50 @@ class Team(ObjectEntry):
             ]
         }
 
+class InfrastructureNode(ObjectEntry):
+
+    @computed_field
+    @property
+    def location(self) -> str|DataCenter|None:
+        return self.getAttributeValueById(self.assetId["location"])
+
+    @computed_field
+    @property
+    def networkInterface(self) -> List[str]|None:
+        r = self.getAttributeValueById(self.assetId["networkInterface"])
+        if (r):
+            return r.split(" ")
+
+    # @computed_field
+    # @property
+    # def networkInterfaces(self):
+    #     return self.getAttributeValueById(self.ID["networkInterface"])
+    #
+    @computed_field
+    @property
+    def owner(self) -> User|None:
+        attr_obj = self.getAttributeById(self.ID["owner"])
+        if not attr_obj:
+            return None
+
+        attr = attr_obj.model_dump()
+
+        values = attr.get("objectAttributeValues") or []
+        first = values[0] if values else {}
+
+        #avatarUrl = first.get("user", {}).get("avatarUrl")
+        #name = first.get("user", {}).get("name")
+        displayName = first.get("user", {}).get("displayName")
+
+        return get_user(displayName)
+
+    @computed_field
+    @property
+    def team(self) -> Team|None:
+        r = self.getAttributeValueById(self.ID["team"])
+        if r:
+            return get_team(r)
+        return None
 
 
 class Host(ObjectEntry):
@@ -275,11 +322,6 @@ class Host(ObjectEntry):
         displayName = first.get("user", {}).get("displayName")
         name = first.get("user", {}).get("name")
 
-        # return {
-        #     "name": displayName,
-        #     "icon": "data:image/png;base64," + utils.file_to_base64(utils.download_image(avatarUrl)),
-        #     "jiraUrl": f"{jira_url}/secure/ViewProfile.jspa?name={name}"
-        # }
         return displayName
 
     def getOS(self):
