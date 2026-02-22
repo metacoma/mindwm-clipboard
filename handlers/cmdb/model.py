@@ -1,5 +1,6 @@
 from __future__ import annotations
 from enum import IntEnum,StrEnum
+import ipaddress
 
 from typing import Any, List, Optional, Dict, ClassVar
 from pydantic import BaseModel, Field, ConfigDict,  model_serializer,  computed_field
@@ -25,6 +26,7 @@ os.makedirs(CACHE_DIR, exist_ok=True)
 class JiraTypes(StrEnum):
     SAN_RACK_SWITCH = "SAN Rack Switch"
     FIREWALL = "Firewall"
+    NAS = "NAS"
 
 class JiraAttributeID(IntEnum):
     #dc
@@ -285,8 +287,14 @@ class InfrastructureNode(ObjectEntry):
     @property
     def networkInterface(self) -> List[str]|None:
         r = self.getAttributeValueById(self.assetId["networkInterface"])
-        if (r):
-            return r.split(" ")
+
+        if r is None:
+            return None
+
+        if isinstance(r, list):
+            return r
+
+        return [ r ]
 
     @computed_field
     @property
@@ -545,6 +553,24 @@ class Firewall(PhysicalInfrastructureNode):
             "selfUrl": self.selfUrl,
         }
 
+class NAS(PhysicalInfrastructureNode):
+    @model_serializer(mode="wrap")
+    def _serialize(self, serializer):
+        base: Dict[str, Any] = serializer(self)
+        return {
+            "name": self.get_attr_value("Name") or self.label,
+            "created": self.created,
+            "updated": self.updated,
+            "location": self.location,
+            "networkInterface": self.networkInterface,
+            "team": self.team,
+            "owner": self.owner,
+            "rackId": self.rackId,
+            "model": self.model,
+            "serial": self.serial,
+            "selfUrl": self.selfUrl,
+        }
+
 
 # utils
 def _cache_path(key: str) -> str:
@@ -626,4 +652,11 @@ def get_firewall(firewall_name : str) -> Host | None:
     r = safe_object_query(f'objectSchemaId IN "{cmdb_id}" AND objectType = "{JiraTypes.FIREWALL}" AND Name = "{firewall_name}"')
     if (r):
         return Firewall.model_validate(r)
+    return None
+
+def get_nas(nas_name : str) -> Host | None:
+    logging.info(f"{nas_name}")
+    r = safe_object_query(f'objectSchemaId IN "{cmdb_id}" AND objectType = "{JiraTypes.NAS}" AND Name = "{nas_name}"')
+    if (r):
+        return NAS.model_validate(r)
     return None
