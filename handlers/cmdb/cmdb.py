@@ -92,5 +92,9 @@ if __name__ == "__main__":
         output = {"cmdb.user": [user.model_dump(mode="json") for user in users]}
         print(yaml.safe_dump(output, allow_unicode=True, sort_keys=False))
 
+    if san_rack_switch:
+        output = {"cmdb.san_rack_switch": [switch.model_dump(mode="json") for switch in san_rack_switch]}
+        print(yaml.safe_dump(output, allow_unicode=True, sort_keys=False))
+
 
     #print(all_results)
