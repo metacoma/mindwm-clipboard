@@ -256,11 +256,22 @@ class Team(ObjectEntry):
         }
 
 class InfrastructureNode(ObjectEntry):
+    @computed_field
+    @property
+    def name(self) -> str:
+        return self.get_attr_value("Name") or self.label
 
     @computed_field
     @property
     def location(self) -> str|DataCenter|None:
-        return self.getAttributeValueById(self.assetId["location"])
+        r = self.getAttributeValueById(self.assetId["location"])
+        if (r):
+            dc = get_dc(r)
+            if dc:
+                return dc
+            else:
+                return r
+        return None
 
     @computed_field
     @property
@@ -272,12 +283,12 @@ class InfrastructureNode(ObjectEntry):
     # @computed_field
     # @property
     # def networkInterfaces(self):
-    #     return self.getAttributeValueById(self.ID["networkInterface"])
+    #     return self.getAttributeValueById(self.assetId["networkInterface"])
     #
     @computed_field
     @property
     def owner(self) -> User|None:
-        attr_obj = self.getAttributeById(self.ID["owner"])
+        attr_obj = self.getAttributeById(self.assetId["owner"])
         if not attr_obj:
             return None
 
@@ -295,64 +306,53 @@ class InfrastructureNode(ObjectEntry):
     @computed_field
     @property
     def team(self) -> Team|None:
-        r = self.getAttributeValueById(self.ID["team"])
+        r = self.getAttributeValueById(self.assetId["team"])
         if r:
             return get_team(r)
         return None
 
 
-class Host(ObjectEntry):
-    def getLocation(self):
-        return self.getAttributeValueById(JiraAttributeID.HOST_LOCATION)
+class Host(InfrastructureNode):
+    assetId = {
+        "location": JiraAttributeID.HOST_LOCATION,
+        "networkInterface": JiraAttributeID.HOST_NETWORK_INTERFACE,
+        "owner": JiraAttributeID.HOST_OWNER,
+        "team": JiraAttributeID.HOST_TEAM,
+        "os": JiraAttributeID.HOST_OS,
+        "service": JiraAttributeID.HOST_SERVICE,
+        "vip": JiraAttributeID.HOST_VIP_IP,
+    }
 
-    def getNetworkInterface(self):
-        return self.getAttributeValueById(JiraAttributeID.HOST_NETWORK_INTERFACE)
+    @computed_field
+    @property
+    def os(self) -> str|None:
+        return self.getAttributeValueById(self.assetId["os"])
 
-    def getOwner(self):
-        attr_obj = self.getAttributeById(JiraAttributeID.HOST_OWNER)
-        if not attr_obj:
-            return None
+    @computed_field
+    @property
+    def service(self) -> str|None:
+        return self.getAttributeValueById(self.assetId["service"])
 
-        attr = attr_obj.model_dump()
-
-        values = attr.get("objectAttributeValues") or []
-        first = values[0] if values else {}
-
-        avatarUrl = first.get("user", {}).get("avatarUrl")
-        displayName = first.get("user", {}).get("displayName")
-        name = first.get("user", {}).get("name")
-
-        return displayName
-
-    def getOS(self):
-        return self.getAttributeValueById(JiraAttributeID.HOST_OS)
-
-    def getService(self):
-        return self.getAttributeValueById(JiraAttributeID.HOST_SERVICE)
-
-    def getVipIP(self):
-        return self.getAttributeValueById(JiraAttributeID.HOST_VIP_IP)
-
-    def getTeam(self):
-        return self.getAttributeValueById(JiraAttributeID.HOST_TEAM)
-
+    @computed_field
+    @property
+    def vip(self) -> str|None:
+        return self.getAttributeValueById(self.assetId["vip"])
 
     @model_serializer(mode="wrap")
     def _serialize(self, serializer):
         base: Dict[str, Any] = serializer(self)
         return {
-            "name": self.get_attr_value("Name") or self.label,
+            "name": self.name,
             "selfUrl": self.selfUrl,
             "created": self.created,
             "updated": self.updated,
-            "location": get_dc(self.getLocation()) if self.getLocation() is not None else "",
-            #"number": int(self.getNumber()) if self.getNumber() is not None else None,
-            "networkInterface": self.getNetworkInterface(),
-            "owner": get_user(self.getOwner()),
-            "os": self.getOS(),
-            "service": str(self.getService()),
-            "vipIp": self.getVipIP(),
-            "team": get_team(self.getTeam()),
+            "location": self.location,
+            "networkInterface": self.networkInterface,
+            "owner": self.owner,
+            "os": self.os,
+            "service": self.service,
+            "vipIp": self.vip,
+            "team": self.team
         }
 
 class User(ObjectEntry):
