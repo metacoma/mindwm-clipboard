@@ -146,6 +146,8 @@ child = lambda obj : any -> kando.Child {
     child = cmdb.makeUserMenu(obj)
   if typeof(obj) == "Host":
     child = cmdb.makeHostMenu(obj)
+  if typeof(obj) == "SanRackSwitch":
+    child = cmdb.makeSanRackSwitchMenu(obj)
   child
 }
 

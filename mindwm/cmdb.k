@@ -272,13 +272,17 @@ schema SanRackSwitch(Object):
   rack_id?: str
   model?: str
   icon = lambda -> str {
-    "⚙️"
+    utils.makeIcon(images.SAN_RACK_SWITCH)
   }
 
 makeSanRackSwitch = lambda obj: any, all_objects : any -> SanRackSwitch {
   SanRackSwitch {
     name = obj.name
     selfUrl = obj.selfUrl
+    if obj.serial:
+      serial = obj.serial
+    if obj.model:
+      model = obj.model
     if obj.location:
       dc = makeDC(obj.location, all_objects)
     if obj.networkInterface:
@@ -295,5 +299,49 @@ makeSanRackSwitch = lambda obj: any, all_objects : any -> SanRackSwitch {
     if obj.owner:
       owner = makeUser(obj.owner, all_objects)
     team = obj.team
+  }
+}
+
+makeSanRackSwitchMenu = lambda switch : any -> kando.Child {
+  kando.Child {
+    name = switch.name
+    icon = switch.icon()
+    children = [
+      utils.makeURI({
+        name = "Jira"
+        icon = "🧩"
+        uri = switch.selfUrl
+      })
+      if switch.team:
+        utils.makeSubmenu({
+          name = switch.team.name
+          icon = "👥"
+          children = makeTeamMenu(switch.team).children
+        })
+      if switch.dc:
+        utils.makeSubmenu({
+          name = switch.dc.name
+          icon = switch.dc.icon()
+          children = makeDCMenu(switch.dc).children
+        })
+      if switch.owner:
+        utils.makeSubmenu({
+          name = switch.owner.name
+          icon = switch.owner.avatar
+          children = makeUserMenu(switch.owner).children
+        })
+      if switch.serial:
+        utils.showText({
+          name = switch.serial
+          icon = utils.makeIcon(images.SERIAL2)
+          text = ""
+        })
+      if switch.model:
+        utils.showText({
+          name = switch.model
+          icon = utils.makeIcon(images.HW_MODEL)
+          text = ""
+        })
+    ]
   }
 }
