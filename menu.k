@@ -7,6 +7,7 @@ import mindwm.content as content
 import mindwm.domain as domain
 import mindwm.mindmap as mindmap
 import mindwm.book as book
+import mindwm.cmdb as cmdb
 import file
 import yaml
 
@@ -93,6 +94,18 @@ object_by_type = lambda t : str, obj: any -> any {
       for _book in obj
     ]
 
+  if t == "cmdb.user":
+    r = [
+      cmdb.makeUser(_user, _all_objects)
+      for _user in obj
+    ]
+
+  if t == "cmdb.host":
+    r = [
+      cmdb.makeHost(_host, _all_objects)
+      for _host in obj
+    ]
+
   r
 }
 
@@ -123,6 +136,10 @@ child = lambda obj : any -> kando.Child {
     child = mindmap.makeMenu(obj)
   if typeof(obj) == "Book":
     child = book.makeMenu(obj)
+  if typeof(obj) == "User":
+    child = cmdb.makeUserMenu(obj)
+  if typeof(obj) == "Host":
+    child = cmdb.makeHostMenu(obj)
   child
 }
 
@@ -139,8 +156,10 @@ kando.Config {
             kando.Redirect {
               name = "${object.name}"
               icon = object.icon()
-              if "iconTheme" in object and object.iconTheme:
-                iconTheme = object.iconTheme()
+              #if (icon.startswith("data:image/")):
+              #  iconTheme = "base64"
+              #if "iconTheme" in object and object.iconTheme:
+              #  iconTheme = object.iconTheme()
               data.menu = "${typeof(object)} ${object.name}"
             }
             for object in _objects
@@ -153,8 +172,8 @@ kando.Config {
         root = {
           name = "${typeof(object)} ${object.name}"
           icon = object.icon()
-          if "iconTheme" in object and object.iconTheme:
-            iconTheme = object.iconTheme()
+          #if "iconTheme" in object and object.iconTheme:
+          #  iconTheme = object.iconTheme()
           children = child(object).children + [
             kando.Redirect {
               name = "back"

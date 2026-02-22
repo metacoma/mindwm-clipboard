@@ -2,10 +2,9 @@ __kando_version = "2.2.0-beta.1"
 
 makeIconTheme = lambda icon -> str {
   r = __defaults.iconTheme
-  if icon.startswith("data:image"):
+  if icon and icon.startswith("data:image"):
     r = "base64"
   r
-
 }
 
 __defaults = {

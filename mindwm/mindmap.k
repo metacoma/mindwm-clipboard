@@ -52,15 +52,10 @@ make = lambda obj: any, all_objects: any -> Node {
   }
 }
 
-nodeIcon = lambda node : Node -> any {
-  iconTheme = "base64"
-}
-
 makeMenu = lambda node -> kando.Child {
   {
     name = node.name
     icon = node.icon()
-    iconTheme = getIconTheme(node.icon())
     children = [
       makeMenu(child)
       for child in node.children
