@@ -49,6 +49,10 @@ class JiraAttributeID(IntEnum):
     #team
     TEAM_USERS = 78505
 
+    #san rack switch
+    SAN_RACK_SWITCH_LOCATION = 19284
+    SAN_RACK_SWITCH_SERIAL = 19094
+
 class ObjectAttributeValue(BaseModel):
     model_config = ConfigDict(extra="allow")
 
@@ -414,11 +418,21 @@ class User(ObjectEntry):
 
 
 class SanRackSwitch(ObjectEntry):
+    @computed_field
+    @property
+    def location(self) -> str | None:
+        return self.getAttributeValueById(JiraAttributeID.SAN_RACK_SWITCH_LOCATION)
+    @computed_field
+    @property
+    def serial(self) -> str | None:
+        return self.getAttributeValueById(JiraAttributeID.SAN_RACK_SWITCH_SERIAL)
     @model_serializer(mode="wrap")
     def _serialize(self, serializer):
         base: Dict[str, Any] = serializer(self)
         return {
             "name": self.get_attr_value("Name") or self.label,
+            "location": get_dc(self.location) if self.location is not None else "",
+            "serial": self.serial,
             "selfUrl": self.selfUrl,
             "created": self.created,
             "updated": self.updated,
