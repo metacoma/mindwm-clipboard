@@ -52,6 +52,7 @@ class JiraAttributeID(IntEnum):
     #san rack switch
     SAN_RACK_SWITCH_LOCATION = 19284
     SAN_RACK_SWITCH_SERIAL = 19094
+    SAN_RACK_SWITCH_NETWORK_INTERFACES = 54993
 
 class ObjectAttributeValue(BaseModel):
     model_config = ConfigDict(extra="allow")
@@ -426,12 +427,20 @@ class SanRackSwitch(ObjectEntry):
     @property
     def serial(self) -> str | None:
         return self.getAttributeValueById(JiraAttributeID.SAN_RACK_SWITCH_SERIAL)
+    @computed_field
+    @property
+    def networkInterfaces(self) -> str | None:
+        r = self.getAttributeValueById(JiraAttributeID.SAN_RACK_SWITCH_NETWORK_INTERFACES)
+        if r:
+            return r.split(" ")
+        return None
     @model_serializer(mode="wrap")
     def _serialize(self, serializer):
         base: Dict[str, Any] = serializer(self)
         return {
             "name": self.get_attr_value("Name") or self.label,
             "location": get_dc(self.location) if self.location is not None else "",
+            "network_interfaces": self.networkInterfaces,
             "serial": self.serial,
             "selfUrl": self.selfUrl,
             "created": self.created,
