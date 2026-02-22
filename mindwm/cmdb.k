@@ -8,7 +8,6 @@ schema Object:
   created?: str
   updated?: str
   selfUrl: str
-  #links: {str:str}
   icon = lambda -> str {
     "🗃️"
   }
@@ -61,15 +60,13 @@ makeDCMenu = lambda dc : any -> kando.Child {
         uri = dc.selfUrl
       })
       utils.showText({
-        name = dc.location
+        text = dc.location
         icon = "🗺️"
-        text = ""
       })
       if dc.number:
         utils.showText({
-          name = str(dc.number)
+          text = str(dc.number)
           icon = "🆔"
-          text = ""
         })
       if dc.documentation:
         utils.makeURI({
@@ -97,7 +94,6 @@ makeUser = lambda obj: any, all_objects : any -> User {
     phone = obj.phone
     telegram = obj.telegram
     jiraProfile = obj.jiraProfile
-    #if obj.head:
     head = [
       makeUser(user_head)
       for user_head in obj.head
@@ -117,9 +113,8 @@ makeUserMenu = lambda user : any -> kando.Child {
         })
       if user.phone:
         utils.showText({
-          name = user.phone
+          text = user.phone
           icon = "☎️"
-          text = ""
         })
       utils.makeJiraUrl({
         name = "Profile"
@@ -131,10 +126,6 @@ makeUserMenu = lambda user : any -> kando.Child {
     ]
   }
 }
-
-
-
-
 
 schema Team(Object):
   memberNames?: [str]
@@ -163,7 +154,6 @@ makeTeamMenu = lambda team : any -> kando.Child {
     ]
   }
 }
-
 
 schema Host(Object):
   dc?: DC
@@ -233,19 +223,12 @@ makeHostMenu = lambda host : any -> kando.Child {
           icon = host.owner.avatar
           children = makeUserMenu(host.owner).children
         })
-      # if host.os:
-      #   utils.showOperatingSystem(host.os)
       if host.service:
         utils.showText({
           text = host.service
           icon = "⚙️"
         })
     ] + [
-        # utils.showText({
-        #   name = iface
-        #   icon = utils.makeIcon(images.IP)
-        #   text = ""
-        # })
         utils.makeSubmenu({
           name = ip.ip
           icon = ip.icon()
