@@ -57,23 +57,6 @@ makeInsertAction = lambda args : any -> kando.Command {
   })
 }
 
-insertText = lambda args : any -> kando.Command {
-  makeCommand({
-    name = "Insert"
-    icon = "⤵️"
-    cmd = "xdotool type \"${args.text}\""
-    # if args.cmd.startswith("ping "):
-    #   icon = "🏓"
-    # if args.cmd.startswith("traceroute "):
-    #   icon = "🧭"
-    # if args.cmd.startswith("ssh "):
-    #   icon = "🖥️"
-    # if args.icon:
-    #   icon = args.icon
-
-  })
-}
-
 showEmoji = lambda title : str, emoji  : str -> kando.Command {
   makeCommand({
     name = title

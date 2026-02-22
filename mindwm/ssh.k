@@ -16,9 +16,10 @@ sshMenu = lambda sshHost: SshHost  -> kando.Child {
     cmd = utils.runTerminal("ssh ${sshHost.hostname}")
     icon = "🔑"
   })
-  current_terminal = utils.insertText({
+  current_terminal = utils.makeInsertAction({
     name = "current"
-    cmd = "ssh ${sshHost.hostname}"
+    icon = "🖥️"
+    text = "ssh ${sshHost.hostname}"
   })
   menu = utils.makeSubmenu({
       name = "ssh"

@@ -42,13 +42,15 @@ makeMenu = lambda ip -> kando.Child {
     name = ip.ip + ""
     icon = ip.icon()
     children = [
-      utils.insertText({
+      utils.makeInsertAction({
         name = "ping"
-        cmd = "ping ${ip.ip}"
+        icon = "🏓"
+        text = "ping ${ip.ip}"
       })
-      utils.insertText({
+      utils.makeInsertAction({
         name = "traceroute"
-        cmd = "traceroute -n -q1 ${ip.ip}"
+        icon = "🧭"
+        text = "traceroute -n -q1 ${ip.ip}"
       })
       utils.makeCommand({
         name = "MTR"
