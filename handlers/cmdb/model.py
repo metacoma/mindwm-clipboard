@@ -52,11 +52,13 @@ class JiraAttributeID(IntEnum):
     #san rack switch
     SAN_RACK_SWITCH_LOCATION = 19284
     SAN_RACK_SWITCH_SERIAL = 19094
-    SAN_RACK_SWITCH_NETWORK_INTERFACES = 54993
+    SAN_RACK_SWITCH_NETWORK_INTERFACE = 54993
     SAN_RACK_SWITCH_TEAM = 55217
     SAN_RACK_SWITCH_OWNER = 75572
     SAN_RACK_SWITCH_MODEL = 56309
     SAN_RACK_SWITCH_RACK = 19299
+    SAN_RACK_SWITCH_START_UNIT = 55345
+    SAN_RACK_SWITCH_UNIT_SIZE = 55344
 
 class ObjectAttributeValue(BaseModel):
     model_config = ConfigDict(extra="allow")
@@ -280,11 +282,6 @@ class InfrastructureNode(ObjectEntry):
         if (r):
             return r.split(" ")
 
-    # @computed_field
-    # @property
-    # def networkInterfaces(self):
-    #     return self.getAttributeValueById(self.assetId["networkInterface"])
-    #
     @computed_field
     @property
     def owner(self) -> User|None:
@@ -311,6 +308,31 @@ class InfrastructureNode(ObjectEntry):
             return get_team(r)
         return None
 
+class PhysicalInfrastructureNode(InfrastructureNode):
+    @computed_field
+    @property
+    def serial(self) -> str|None:
+        return self.getAttributeValueById(self.assetId["serial"])
+
+    @computed_field
+    @property
+    def model(self) -> str|None:
+        return self.getAttributeValueById(self.assetId["model"])
+
+    @computed_field
+    @property
+    def startUnit(self) -> str|None:
+        return self.getAttributeValueById(self.assetId["startUnit"])
+
+    @computed_field
+    @property
+    def size(self) -> str|None:
+        return self.getAttributeValueById(self.assetId["size"])
+
+    @computed_field
+    @property
+    def rackId(self) -> str | None:
+        return self.getAttributeValueById(self.assetId["rackId"])
 
 class Host(InfrastructureNode):
     assetId = {
@@ -463,71 +485,33 @@ class User(ObjectEntry):
         }
     pass
 
-
-class SanRackSwitch(ObjectEntry):
-    @computed_field
-    @property
-    def location(self) -> str | None:
-        return self.getAttributeValueById(JiraAttributeID.SAN_RACK_SWITCH_LOCATION)
-    @computed_field
-    @property
-    def serial(self) -> str | None:
-        return self.getAttributeValueById(JiraAttributeID.SAN_RACK_SWITCH_SERIAL)
-    @computed_field
-    @property
-    def networkInterfaces(self) -> List[str] | None:
-        r = self.getAttributeValueById(JiraAttributeID.SAN_RACK_SWITCH_NETWORK_INTERFACES)
-        if r:
-            return r.split(" ")
-        return None
-
-    @computed_field
-    @property
-    def team(self) -> Team | None:
-        r = self.getAttributeValueById(JiraAttributeID.SAN_RACK_SWITCH_TEAM)
-        if r:
-            return get_team(r)
-        return None
-
-    @computed_field
-    @property
-    def owner(self) -> User | None:
-        attr_obj = self.getAttributeValueById(JiraAttributeID.SAN_RACK_SWITCH_OWNER)
-        attr_obj = self.getAttributeById(JiraAttributeID.HOST_OWNER)
-
-        if not attr_obj:
-            return None
-
-        attr = attr_obj.model_dump()
-        values = attr.get("objectAttributeValues") or []
-        first = values[0] if values else {}
-
-        name = first.get("user", {}).get("displayName")
-        return get_user(name)
-
-    @computed_field
-    @property
-    def model(self) -> str | None:
-        return self.getAttributeValueById(JiraAttributeID.SAN_RACK_SWITCH_MODEL)
-    @computed_field
-    @property
-    def rack_id(self) -> str | None:
-        return self.getAttributeValueById(JiraAttributeID.SAN_RACK_SWITCH_RACK)
+class SanRackSwitch(PhysicalInfrastructureNode):
+    assetId = {
+        "location": JiraAttributeID.SAN_RACK_SWITCH_LOCATION,
+        "networkInterface": JiraAttributeID.SAN_RACK_SWITCH_NETWORK_INTERFACE,
+        "owner": JiraAttributeID.SAN_RACK_SWITCH_OWNER,
+        "team": JiraAttributeID.SAN_RACK_SWITCH_TEAM,
+        "serial": JiraAttributeID.SAN_RACK_SWITCH_SERIAL,
+        "model": JiraAttributeID.SAN_RACK_SWITCH_MODEL,
+        "startUnit": JiraAttributeID.SAN_RACK_SWITCH_START_UNIT,
+        "size": JiraAttributeID.SAN_RACK_SWITCH_UNIT_SIZE,
+        "rackId" : JiraAttributeID.SAN_RACK_SWITCH_RACK
+    }
     @model_serializer(mode="wrap")
     def _serialize(self, serializer):
         base: Dict[str, Any] = serializer(self)
         return {
             "name": self.get_attr_value("Name") or self.label,
-            "location": get_dc(self.location) if self.location is not None else "",
-            "networkInterfaces": self.networkInterfaces,
+            "created": self.created,
+            "updated": self.updated,
+            "location": self.location,
+            "networkInterface": self.networkInterface,
             "team": self.team,
             "owner": self.owner,
-            "rack_id": self.rack_id,
+            "rackId": self.rackId,
             "model": self.model,
             "serial": self.serial,
             "selfUrl": self.selfUrl,
-            "created": self.created,
-            "updated": self.updated,
         }
 
 
