@@ -240,7 +240,9 @@ class DataCenter(Location):
     def getLocation(self):
         return self.getAttributeValueById(JiraAttributeID.DC_LOCATION)
 
-    def getCountry(self):
+    @computed_field
+    @property
+    def country(self) -> str|None:
         return self.getAttributeValueById(JiraAttributeID.COUNTRY)
 
     @computed_field
@@ -258,7 +260,7 @@ class DataCenter(Location):
             "documentation": self.documentationUrl,
             "created": self.created,
             "updated": self.updated,
-            "country": self.getCountry(),
+            "country": self.country,
             "location": self.getLocation(),
             "number": self.number,
             "status": self.status
