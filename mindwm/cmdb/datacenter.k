@@ -1,6 +1,7 @@
 import mindwm.cmdb.schema as schema
 import kando.utils as utils
 import kando.schema as kando
+import regex
 
 schema Location(schema.Object):
   status: str
@@ -23,6 +24,8 @@ schema DC(Location):
       i = utils.country_icon("NL")
     if country == "Russia":
       i = utils.country_icon("RU")
+    if country == "Armenia":
+      i = utils.country_icon("AM")
     i
   }
 
@@ -33,6 +36,8 @@ make = lambda obj: any, all_objects : any -> DC {
     status = obj.status
     location = obj.location
     country = obj.country
+    if location and regex.match(location, "Ереван.*"):
+      country = "Armenia"
     if obj.number:
       number = obj.number
     documentation = obj.documentation
