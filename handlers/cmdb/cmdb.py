@@ -10,6 +10,7 @@ from colorama import Fore, Style
 import pprint
 from model import ObjectEntry,JiraTypes,DataCenter,Host,User,SanRackSwitch,Firewall,NAS,LanRouter
 import yaml
+from collections import defaultdict
 
 import logging
 import sys
@@ -52,77 +53,31 @@ if __name__ == "__main__":
             + " OR ".join(conditions)
             + ")"
         )
-    output = ""
-    hosts = []
-    datacenters = []
-    users = []
-    san_rack_switch = []
-    firewall = []
-    nas = []
-    lan_router = []
+# type -> (PydanticModel, output_key)
+    TYPE_MAP = {
+        JiraTypes.DATACENTER: (DataCenter, "cmdb.dc"),
+        JiraTypes.HOST: (Host, "cmdb.host"),
+        JiraTypes.USER: (User, "cmdb.user"),
+        JiraTypes.SAN_RACK_SWITCH: (SanRackSwitch, "cmdb.san_rack_switch"),
+        JiraTypes.FIREWALL: (Firewall, "cmdb.firewall"),
+        JiraTypes.NAS: (NAS, "cmdb.nas"),
+        JiraTypes.LAN_ROUTER: (LanRouter, "cmdb.lan_router"),
+    }
 
     all_results = utils.execute_aql_query(aql_query)
     objects = [ObjectEntry.model_validate(o) for o in all_results["objectEntries"]]
 
+    grouped = defaultdict(list)  # output_key -> list[BaseModel]
+
     for obj in objects:
-        if obj.get_type() == JiraTypes.DATACENTER:
-            dc = DataCenter.model_validate(obj.model_dump(by_alias=True))
-            datacenters.append(dc)
+        t = obj.get_type()
+        spec = TYPE_MAP.get(t)
+        if not spec:
+            continue
 
-        if obj.get_type() == JiraTypes.HOST:
-            host = Host.model_validate(obj.model_dump(by_alias=True))
-            hosts.append(host)
+        Model, out_key = spec
+        grouped[out_key].append(Model.model_validate(obj.model_dump(by_alias=True)))
 
-        if obj.get_type() == JiraTypes.USER:
-            user = User.model_validate(obj.model_dump(by_alias=True))
-            users.append(user)
-
-        if obj.get_type() == JiraTypes.SAN_RACK_SWITCH:
-            switch = SanRackSwitch.model_validate(obj.model_dump(by_alias=True))
-            san_rack_switch.append(switch)
-
-        if obj.get_type() == JiraTypes.FIREWALL:
-            switch = Firewall.model_validate(obj.model_dump(by_alias=True))
-            firewall.append(switch)
-
-        if obj.get_type() == JiraTypes.NAS:
-            switch = NAS.model_validate(obj.model_dump(by_alias=True))
-            nas.append(switch)
-
-        if obj.get_type() == JiraTypes.LAN_ROUTER:
-            switch = LanRouter.model_validate(obj.model_dump(by_alias=True))
-            lan_router.append(switch)
-
-
-
-    if datacenters:
-        output = {"cmdb.dc": [dc.model_dump(mode="json") for dc in datacenters]}
+    for out_key, items in grouped.items():
+        output = {out_key: [m.model_dump(mode="json") for m in items]}
         print(yaml.safe_dump(output, allow_unicode=True, sort_keys=False))
-
-    if hosts:
-        output = {"cmdb.host": [host.model_dump(mode="json") for host in hosts]}
-        print(yaml.safe_dump(output, allow_unicode=True, sort_keys=False))
-
-    if users:
-        output = {"cmdb.user": [user.model_dump(mode="json") for user in users]}
-        print(yaml.safe_dump(output, allow_unicode=True, sort_keys=False))
-
-    if san_rack_switch:
-        output = {"cmdb.san_rack_switch": [switch.model_dump(mode="json") for switch in san_rack_switch]}
-        print(yaml.safe_dump(output, allow_unicode=True, sort_keys=False))
-
-    if firewall:
-        output = {"cmdb.firewall": [switch.model_dump(mode="json") for switch in firewall]}
-        print(yaml.safe_dump(output, allow_unicode=True, sort_keys=False))
-
-    if nas:
-        output = {"cmdb.nas": [storage.model_dump(mode="json") for storage in nas]}
-        print(yaml.safe_dump(output, allow_unicode=True, sort_keys=False))
-
-    if lan_router:
-        output = {"cmdb.lan_router": [router.model_dump(mode="json") for router in lan_router]}
-        print(yaml.safe_dump(output, allow_unicode=True, sort_keys=False))
-
-
-
-    #print(all_results)
