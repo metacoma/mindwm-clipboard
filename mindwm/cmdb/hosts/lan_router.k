@@ -10,13 +10,6 @@ import mindwm.ipv4 as ipv4
 import regex
 
 schema LanRouter(physical.PhysicalHost):
-  icon = lambda -> str {
-    r = utils.makeIcon(images.LAN_ROUTER)
-    if model and regex.match(model, "^RB"):
-      r = utils.makeIcon(images.MIKROTIK)
-    r
-  }
-
 
 make = lambda obj: any, all_objects : any -> LanRouter {
   LanRouter {

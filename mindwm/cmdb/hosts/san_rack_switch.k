@@ -9,11 +9,6 @@ import kando.images as images
 import mindwm.ipv4 as ipv4
 
 schema SanRackSwitch(physical.PhysicalHost):
-  icon = lambda -> str {
-    r = utils.makeIcon(images.SAN_RACK_SWITCH)
-    r
-  }
-
 
 make = lambda obj: any, all_objects : any -> SanRackSwitch {
   SanRackSwitch {
