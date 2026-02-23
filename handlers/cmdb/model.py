@@ -243,7 +243,9 @@ class DataCenter(Location):
     def getCountry(self):
         return self.getAttributeValueById(JiraAttributeID.COUNTRY)
 
-    def getNumber(self):
+    @computed_field
+    @property
+    def number(self) -> str|None:
         return self.getAttributeValueById(JiraAttributeID.NUMBER)
 
     @model_serializer(mode="wrap")
@@ -258,7 +260,7 @@ class DataCenter(Location):
             "updated": self.updated,
             "country": self.getCountry(),
             "location": self.getLocation(),
-            "number": int(self.getNumber()) if self.getNumber() is not None else None,
+            "number": self.number,
             "status": self.status
         }
 
@@ -505,7 +507,6 @@ class User(ObjectEntry):
 
         unique_usernames = list(dict.fromkeys(usernames))
 
-        # вызываем get_user
         head_users = [get_user(username) for username in unique_usernames]
 
         return head_users
@@ -545,17 +546,6 @@ class User(ObjectEntry):
     pass
 
 class SanRackSwitch(PhysicalInfrastructureNode):
-    # assetId = {
-    #     "location": JiraAttributeID.HW_LOCATION,
-    #     "networkInterface": JiraAttributeID.NETWORK_INTERFACE,
-    #     "owner": JiraAttributeID.HOST_OWNER,
-    #     "team": JiraAttributeID.HOST_TEAM,
-    #     #"serial": JiraAttributeID.HW_SERIAL,
-    #     "model": JiraAttributeID.HOST_MODEL,
-    #     #"startUnit": JiraAttributeID.HW_START_UNIT,
-    #     #"size": JiraAttributeID.HW_UNIT_SIZE,
-    #     "rackId" : JiraAttributeID.HW_RACK
-    # }
     @model_serializer(mode="wrap")
     def _serialize(self, serializer):
         base: Dict[str, Any] = serializer(self)
