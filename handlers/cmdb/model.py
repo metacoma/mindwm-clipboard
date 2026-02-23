@@ -431,8 +431,17 @@ class Host(InfrastructureNode):
 
     @computed_field
     @property
-    def service(self) -> str|None:
-        return self.getAttributeValueById(self.assetId["service"])
+    def service(self) -> List[str]|None:
+        r = self.getAttributeValueById(self.assetId["service"])
+
+        if r is None:
+            return None
+
+        if isinstance(r, list):
+            return r
+
+        return [ r ]
+
 
     @computed_field
     @property

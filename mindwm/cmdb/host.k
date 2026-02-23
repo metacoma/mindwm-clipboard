@@ -12,7 +12,7 @@ schema Host(schema.Object):
   team?: team.Team
   owner?: user.User
   os?: str
-  service?: str
+  service?: [str]
   vipIp?: ipv4.Ip4
   icon = lambda -> str {
     utils.operatingSystemIcon(os)
@@ -81,7 +81,7 @@ makeMenu = lambda host : any -> kando.Child {
         })
       if host.service:
         utils.showText({
-          text = host.service
+          text = ",".join(host.service)
           icon = "⚙️"
         })
     ] + [
