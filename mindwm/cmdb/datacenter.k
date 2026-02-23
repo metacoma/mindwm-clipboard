@@ -43,7 +43,7 @@ make = lambda obj: any, all_objects : any -> DC {
     if location:
       if regex.match(location, "(Ереван|Yerevan|Armenia).*"):
         country = "Armenia"
-      if regex.match(location, ".*(Moskva|Москва).*"):
+      if regex.match(location, ".*(Moskva|Москва|Sankt-Peterburg).*"):
         country = "Russia"
       if regex.match(location, ".*(NICOSIA).*"):
         country = "Cyprus"
