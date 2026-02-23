@@ -9,7 +9,7 @@ import mindwm.cmdb.user as user
 schema Host(schema.Object):
   dc?: datacenter.DC
   networkInterface?: [ipv4.Ip4] = []
-  team?: team.Team
+  team?: [team.Team]
   owner?: user.User
   os?: str
   service?: [str]
@@ -61,12 +61,6 @@ makeMenu = lambda host : any -> kando.Child {
           icon = host.vipIp.icon()
           children = ipv4.makeMenu(host.vipIp).children
         })
-      if host.team:
-        utils.makeSubmenu({
-          name = host.team.name
-          icon = "👥"
-          children = team.makeMenu(host.team).children
-        })
       if host.dc:
         utils.makeSubmenu({
           name = host.dc.name
@@ -91,6 +85,13 @@ makeMenu = lambda host : any -> kando.Child {
           children = ipv4.makeMenu(ip).children
         })
         for ip in host.networkInterface
+    ] + [
+        utils.makeSubmenu({
+          name = host_team.name
+          icon = "👥"
+          children = team.makeMenu(host_team).children
+        })
+        for host_team in host.team
     ]
   }
 }

@@ -375,11 +375,19 @@ class InfrastructureNode(ObjectEntry):
 
     @computed_field
     @property
-    def team(self) -> Team|None:
+    def team(self) -> List[Team]|None:
         r = self.getAttributeValueById(self.assetId["team"])
+
+        if isinstance(r, list):
+            return [
+                get_team(team_name)
+                for team_name in r
+            ]
+
         if r:
-            return get_team(r)
-        return None
+            return [ get_team(r) ]
+
+        return []
 
 class PhysicalInfrastructureNode(InfrastructureNode):
     assetId: ClassVar[dict[str, int]] = {
