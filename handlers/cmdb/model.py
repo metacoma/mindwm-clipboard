@@ -24,6 +24,9 @@ CACHE_TTL = 60 * 60 * 24  # 1 day
 os.makedirs(CACHE_DIR, exist_ok=True)
 
 class JiraTypes(StrEnum):
+    DATACENTER = "DataCenter"
+    HOST = "Host"
+    USER = "User"
     SAN_RACK_SWITCH = "SAN Rack Switch"
     FIREWALL = "Firewall"
     NAS = "NAS"

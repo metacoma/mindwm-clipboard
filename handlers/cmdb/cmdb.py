@@ -65,15 +65,15 @@ if __name__ == "__main__":
     objects = [ObjectEntry.model_validate(o) for o in all_results["objectEntries"]]
 
     for obj in objects:
-        if obj.get_type() == "DataCenter":
+        if obj.get_type() == JiraTypes.DATACENTER:
             dc = DataCenter.model_validate(obj.model_dump(by_alias=True))
             datacenters.append(dc)
 
-        if obj.get_type() == "Host":
+        if obj.get_type() == JiraTypes.HOST:
             host = Host.model_validate(obj.model_dump(by_alias=True))
             hosts.append(host)
 
-        if obj.get_type() == "User":
+        if obj.get_type() == JiraTypes.USER:
             user = User.model_validate(obj.model_dump(by_alias=True))
             users.append(user)
 
