@@ -4,7 +4,7 @@ import kando.schema as kando
 import regex
 
 schema Location(schema.Object):
-  status: str
+  status?: str
   location?: str
   country?: str
   number?: int
@@ -41,25 +41,29 @@ make = lambda obj: any, all_objects : any -> DC {
   DC {
     selfUrl = obj.selfUrl
     name = obj.name
-    status = obj.status
-    location = obj.location
-    country = obj.country
-    if location:
-      if regex.match(location, "(Ереван|Yerevan|Armenia).*") or name == "SAD":
+    if obj.status:
+      status = obj.status
+    if obj.location:
+      location = obj.location
+    if obj.country:
+      country = obj.country
+    if obj.location:
+      if regex.match(obj.location, "(Ереван|Yerevan|Armenia).*") or name == "SAD":
         country = "Armenia"
-      if regex.match(location, ".*(Moskva|Москва|Sankt-Peterburg).*"):
+      if regex.match(obj.location, ".*(Moskva|Москва|Sankt-Peterburg).*"):
         country = "Russia"
-      if regex.match(location, ".*(NICOSIA).*"):
+      if regex.match(obj.location, ".*(NICOSIA).*"):
         country = "Cyprus"
-      if regex.match(location, ".*(Minsk|Belarus).*"):
+      if regex.match(obj.location, ".*(Minsk|Belarus).*"):
         country = "Belarus"
-      if regex.match(location, ".*(Grieķija).*"):
+      if regex.match(obj.location, ".*(Grieķija).*"):
         country = "Greece"
     if name == "KZS":
       country = "Kazakhstan"
     if obj.number:
       number = obj.number
-    documentation = obj.documentation
+    if obj.documentation:
+      documentation = obj.documentation
   }
 }
 
