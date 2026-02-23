@@ -30,6 +30,8 @@ schema DC(Location):
       i = utils.country_icon("CY")
     if country == "Kazakhstan":
       i = utils.country_icon("KZ")
+    if country == "Belarus":
+      i = utils.country_icon("BY")
     i
   }
 
@@ -47,6 +49,8 @@ make = lambda obj: any, all_objects : any -> DC {
         country = "Russia"
       if regex.match(location, ".*(NICOSIA).*"):
         country = "Cyprus"
+      if regex.match(location, ".*(Minsk|Belarus).*"):
+        country = "Belarus"
     if name == "KZS":
       country = "Kazakhstan"
     if obj.number:
