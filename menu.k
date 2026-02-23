@@ -16,6 +16,7 @@ import mindwm.cmdb.hosts.firewall as firewall
 import mindwm.cmdb.hosts.nas as nas
 import mindwm.cmdb.hosts.lan_router as lan_router
 import mindwm.cmdb.hosts.lan_rack_switch as lan_rack_switch
+import mindwm.cmdb.vhost as vhost
 import file
 import yaml
 
@@ -144,6 +145,12 @@ object_by_type = lambda t : str, obj: any -> any {
       for _host in obj
     ]
 
+  if t == "cmdb.vhost":
+    r = [
+      vhost.make(_vhost, _all_objects)
+      for _vhost in obj
+    ]
+
   r
 }
 
@@ -188,6 +195,8 @@ child = lambda obj : any -> kando.Child {
     child = lan_router.makeMenu(obj)
   if typeof(obj) == "LanRackSwitch":
     child = lan_rack_switch.makeMenu(obj)
+  if typeof(obj) == "VHost":
+    child = vhost.makeMenu(obj)
   child
 }
 

@@ -8,7 +8,7 @@ import utils
 from dotenv import load_dotenv
 from colorama import Fore, Style
 import pprint
-from model import ObjectEntry,JiraTypes,DataCenter,Host,User,SanRackSwitch,Firewall,NAS,LanRouter,LanRackSwitch
+from model import ObjectEntry,JiraTypes,DataCenter,Host,User,SanRackSwitch,Firewall,NAS,LanRouter,LanRackSwitch,VHost
 import yaml
 from collections import defaultdict
 
@@ -64,6 +64,7 @@ if __name__ == "__main__":
         JiraTypes.NAS: (NAS, "cmdb.nas"),
         JiraTypes.LAN_ROUTER: (LanRouter, "cmdb.lan_router"),
         JiraTypes.LAN_RACK_SWITCH: (LanRackSwitch, "cmdb.lan_rack_switch"),
+        JiraTypes.VHOST: (VHost, "cmdb.vhost"),
     }
 
     all_results = utils.execute_aql_query(aql_query)

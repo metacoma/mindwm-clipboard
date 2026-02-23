@@ -24,6 +24,7 @@ schema PhysicalHost(Host):
   model?: str
 
 make = lambda obj: any, all_objects : any -> Host {
+  #print("XXX {obj}")
   Host {
     name = obj.name
     selfUrl = obj.selfUrl

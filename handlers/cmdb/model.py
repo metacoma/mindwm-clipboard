@@ -41,6 +41,8 @@ class JiraTypes(StrEnum):
     LAN_ROUTER = "LAN Routers"
     LAN_RACK_SWITCH = "LAN Rack Switch"
 
+    # other
+    VHOST = "vHost"
 class JiraAttributeID(IntEnum):
     #dc
     DC_LOCATION = 16877
@@ -75,6 +77,10 @@ class JiraAttributeID(IntEnum):
 
     #team
     TEAM_USERS = 78505
+
+    #vhost
+    VHOST_PORT = 79291
+    VHOST_HOST = 79293
 
 class ObjectAttributeValue(BaseModel):
     model_config = ConfigDict(extra="allow")
@@ -686,6 +692,46 @@ class NAS(PhysicalInfrastructureNode):
             "selfUrl": self.selfUrl,
         }
 
+class VHost(ObjectEntry):
+    @computed_field
+    @property
+    def port(self) -> int|None:
+        r = self.getAttributeValueById(JiraAttributeID.VHOST_PORT)
+        if (r):
+            return int(r)
+        return None
+
+    @computed_field
+    @property
+    def hostNames(self) -> List[str]|None:
+        hosts = self.getAttributeById(JiraAttributeID.VHOST_HOST)
+        if not hosts:
+            return []
+
+        hostnames = [
+            h.displayValue
+            for h in hosts.objectAttributeValues
+        ]
+        return list(dict.fromkeys(hostnames))
+
+
+    @model_serializer(mode="wrap")
+    def _serialize(self, serializer):
+        base: Dict[str, Any] = serializer(self)
+        return {
+            "name": self.name,
+            "created": self.created,
+            "updated": self.updated,
+            "selfUrl": self.selfUrl,
+            "hostNames": self.hostNames,
+            "hosts": [
+                host
+                for host_name in self.hostNames
+                if (host := get_host(host_name)) is not None
+             ],
+            "port": self.port,
+        }
+
 
 # utils
 def _cache_path(key: str) -> str:
@@ -802,4 +848,12 @@ def get_cloud(cloud_name : str) -> Host | None:
     r = safe_object_query(f'objectSchemaId IN "{cmdb_id}" AND objectType = "{JiraTypes.CLOUD}" AND Name = "{cloud_name}"')
     if (r):
         return Cloud.model_validate(r)
+    return None
+
+
+def get_vhost(vhost_name : str) -> Host | None:
+    logging.info(f"{vhost_name}")
+    r = safe_object_query(f'objectSchemaId IN "{cmdb_id}" AND objectType = "{JiraTypes.VHOST}" AND Name = "{vhost_name}"')
+    if (r):
+        return VHost.model_validate(r)
     return None
