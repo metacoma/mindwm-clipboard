@@ -28,12 +28,22 @@ make = lambda obj: any -> Ip4 {
 
 makeRefIp = lambda ip : str, all_objects : any -> Ip4 {
   r = None
-  if "Ip {ip}" in all_objects:
-    r = make(all_objects["Ip ${ip.ip}"]["ip4"][0])
+
+  match_ip = [
+    if obj_ip.ip == ip:
+      obj_ip
+    for obj_ip in all_objects["ip4"]
+  ]
+  if match_ip[0]:
+    r = make(match_ip[0][0])
   else:
+    if "Ip {ip}" in all_objects:
+      r = make(all_objects["Ip ${ip.ip}"]["ip4"][0])
+  if not r:
     r = make({
       ip = ip
     })
+
   r
 }
 
