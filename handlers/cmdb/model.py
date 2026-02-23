@@ -37,6 +37,7 @@ class JiraAttributeID(IntEnum):
     LOCATION_CONFLUENCE = 78561
     NUMBER = 16880
     DC_DOC = 16886
+    OFFICE_LOC = 78560
     OFFICE_DOC = 78561
 
     #host
@@ -191,6 +192,20 @@ class Location(ObjectEntry):
 
     @computed_field
     @property
+    def location(self) -> str|None:
+        doc_id = None
+        if isinstance(self, DataCenter):
+            doc_id = JiraAttributeID.DC_LOCATION
+        elif isinstance(self, Office):
+            doc_id = JiraAttributeID.OFFICE_LOC
+        if not doc_id:
+            return None
+
+        return self.getAttributeValueById(doc_id)
+
+
+    @computed_field
+    @property
     def documentationUrl(self) -> str|None:
         doc_id = None
         if isinstance(self, DataCenter):
@@ -229,17 +244,14 @@ class Location(ObjectEntry):
             "created": self.created,
             "updated": self.updated,
             "status": self.status,
-            "documentation": self.documentationUrl
+            "documentation": self.documentationUrl,
+            "location": self.location
         }
 
 class Office(Location):
     pass
 
 class DataCenter(Location):
-
-    def getLocation(self):
-        return self.getAttributeValueById(JiraAttributeID.DC_LOCATION)
-
     @computed_field
     @property
     def country(self) -> str|None:
@@ -261,7 +273,7 @@ class DataCenter(Location):
             "created": self.created,
             "updated": self.updated,
             "country": self.country,
-            "location": self.getLocation(),
+            "location": self.location,
             "number": self.number,
             "status": self.status
         }
