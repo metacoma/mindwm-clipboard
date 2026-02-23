@@ -27,14 +27,17 @@ class JiraTypes(StrEnum):
     SAN_RACK_SWITCH = "SAN Rack Switch"
     FIREWALL = "Firewall"
     NAS = "NAS"
+    OFFICE = "Office"
 
 class JiraAttributeID(IntEnum):
     #dc
     DC_LOCATION = 16877
     COUNTRY = 16878
-    STATUS = 73044
+    LOCATION_STATUS = 73044
+    LOCATION_CONFLUENCE = 78561
     NUMBER = 16880
     DC_DOC = 16886
+    OFFICE_DOC = 78561
 
     #host
     HOST_LOCATION = 19284
@@ -169,27 +172,37 @@ class ObjectEntry(BaseModel):
 
     @computed_field
     @property
+    def name(self) -> str:
+        return self.get_name()
+
+    @computed_field
+    @property
     def selfUrl(self) -> Optional[str]:
         if self.links:
             return self.links.get("self")
         return None
 
-class DataCenter(ObjectEntry):
+class Location(ObjectEntry):
 
-    def getLocation(self):
-        return self.getAttributeValueById(JiraAttributeID.DC_LOCATION)
+    @computed_field
+    @property
+    def status(self) -> str|None:
+        return self.getAttributeValueById(JiraAttributeID.LOCATION_STATUS)
 
-    def getCountry(self):
-        return self.getAttributeValueById(JiraAttributeID.COUNTRY)
+    @computed_field
+    @property
+    def documentationUrl(self) -> str|None:
+        doc_id = None
+        if isinstance(self, DataCenter):
+            doc_id = JiraAttributeID.DC_DOC
+        else:
+            doc_id = JiraAttributeID.OFFICE_DOC
 
-    def getStatus(self):
-        return self.getAttributeValueById(JiraAttributeID.STATUS)
+        if not doc_id:
+            return None
 
-    def getNumber(self):
-        return self.getAttributeValueById(JiraAttributeID.NUMBER)
+        attr_obj = self.getAttributeById(doc_id)
 
-    def getDocumentation(self):
-        attr_obj = self.getAttributeById(JiraAttributeID.DC_DOC)
         if not attr_obj:
             return None
 
@@ -204,6 +217,8 @@ class DataCenter(ObjectEntry):
             return url
 
         return None
+
+
     @model_serializer(mode="wrap")
     def _serialize(self, serializer):
         base: Dict[str, Any] = serializer(self)
@@ -211,13 +226,40 @@ class DataCenter(ObjectEntry):
         return {
             "name": self.get_attr_value("Name") or self.label,
             "selfUrl": self.selfUrl,
-            "documentation": self.getDocumentation(),
+            "created": self.created,
+            "updated": self.updated,
+            "status": self.status,
+            "documentation": self.documentationUrl
+        }
+
+class Office(Location):
+    pass
+
+class DataCenter(Location):
+
+    def getLocation(self):
+        return self.getAttributeValueById(JiraAttributeID.DC_LOCATION)
+
+    def getCountry(self):
+        return self.getAttributeValueById(JiraAttributeID.COUNTRY)
+
+    def getNumber(self):
+        return self.getAttributeValueById(JiraAttributeID.NUMBER)
+
+    @model_serializer(mode="wrap")
+    def _serialize(self, serializer):
+        base: Dict[str, Any] = serializer(self)
+
+        return {
+            "name": self.name,
+            "selfUrl": self.selfUrl,
+            "documentation": self.documentationUrl,
             "created": self.created,
             "updated": self.updated,
             "country": self.getCountry(),
             "location": self.getLocation(),
             "number": int(self.getNumber()) if self.getNumber() is not None else None,
-            "status": self.getStatus()
+            "status": self.status
         }
 
 class Team(ObjectEntry):
@@ -659,4 +701,11 @@ def get_nas(nas_name : str) -> Host | None:
     r = safe_object_query(f'objectSchemaId IN "{cmdb_id}" AND objectType = "{JiraTypes.NAS}" AND Name = "{nas_name}"')
     if (r):
         return NAS.model_validate(r)
+    return None
+
+def get_office(office_name : str) -> Host | None:
+    logging.info(f"{office_name}")
+    r = safe_object_query(f'objectSchemaId IN "{cmdb_id}" AND objectType = "{JiraTypes.OFFICE}" AND Name = "{office_name}"')
+    if (r):
+        return Office.model_validate(r)
     return None
