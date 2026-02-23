@@ -36,8 +36,11 @@ make = lambda obj: any, all_objects : any -> DC {
     status = obj.status
     location = obj.location
     country = obj.country
-    if location and regex.match(location, "Ереван.*"):
-      country = "Armenia"
+    if location:
+      if regex.match(location, "Ереван.*"):
+        country = "Armenia"
+      if regex.match(location, ".*(Moskva|Москва).*"):
+        country = "Russia"
     if obj.number:
       number = obj.number
     documentation = obj.documentation
