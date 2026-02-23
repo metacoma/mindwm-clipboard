@@ -224,7 +224,7 @@ class Location(ObjectEntry):
         base: Dict[str, Any] = serializer(self)
 
         return {
-            "name": self.get_attr_value("Name") or self.label,
+            "name": self.name,
             "selfUrl": self.selfUrl,
             "created": self.created,
             "updated": self.updated,
@@ -287,7 +287,7 @@ class Team(ObjectEntry):
     def _serialize(self, serializer):
         base: Dict[str, Any] = serializer(self)
         return {
-            "name": self.get_attr_value("Name") or self.label,
+            "name": self.name,
             "selfUrl": self.selfUrl,
             "created": self.created,
             "updated": self.updated,
@@ -308,10 +308,6 @@ class InfrastructureNode(ObjectEntry):
         "owner": JiraAttributeID.HOST_OWNER,
         "model": JiraAttributeID.HOST_MODEL,
     }
-    @computed_field
-    @property
-    def name(self) -> str:
-        return self.get_attr_value("Name") or self.label
 
     @computed_field
     @property
@@ -564,7 +560,7 @@ class SanRackSwitch(PhysicalInfrastructureNode):
     def _serialize(self, serializer):
         base: Dict[str, Any] = serializer(self)
         return {
-            "name": self.get_attr_value("Name") or self.label,
+            "name": self.name,
             "created": self.created,
             "updated": self.updated,
             "location": self.location,
@@ -600,7 +596,7 @@ class NAS(PhysicalInfrastructureNode):
     def _serialize(self, serializer):
         base: Dict[str, Any] = serializer(self)
         return {
-            "name": self.get_attr_value("Name") or self.label,
+            "name": self.name,
             "created": self.created,
             "updated": self.updated,
             "location": self.location,
