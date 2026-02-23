@@ -259,8 +259,11 @@ class DataCenter(Location):
 
     @computed_field
     @property
-    def number(self) -> str|None:
-        return self.getAttributeValueById(JiraAttributeID.NUMBER)
+    def number(self) -> int|None:
+        r = self.getAttributeValueById(JiraAttributeID.NUMBER)
+        if r:
+            return int(r)
+        return None
 
     @model_serializer(mode="wrap")
     def _serialize(self, serializer):
@@ -327,14 +330,15 @@ class InfrastructureNode(ObjectEntry):
 
     @computed_field
     @property
-    def location(self) -> str|DataCenter|None:
+    def location(self) -> DataCenter|Office|None:
         r = self.getAttributeValueById(self.assetId["location"])
         if (r):
             dc = get_dc(r)
             if dc:
                 return dc
-            else:
-                return r
+            office = get_office(r)
+            if office:
+                return office
         return None
 
     @computed_field
