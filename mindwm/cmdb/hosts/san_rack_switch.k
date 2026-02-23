@@ -10,7 +10,8 @@ import mindwm.ipv4 as ipv4
 
 schema SanRackSwitch(physical.PhysicalHost):
   icon = lambda -> str {
-    utils.makeIcon(images.SAN_RACK_SWITCH)
+    r = utils.makeIcon(images.SAN_RACK_SWITCH)
+    r
   }
 
 

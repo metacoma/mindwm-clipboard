@@ -32,6 +32,7 @@ class JiraTypes(StrEnum):
     NAS = "NAS"
     OFFICE = "Office"
     LAN_ROUTER = "LAN Routers"
+    LAN_RACK_SWITCH = "LAN Rack Switch"
 
 class JiraAttributeID(IntEnum):
     #dc
@@ -602,6 +603,9 @@ class SanRackSwitch(PhysicalInfrastructureNode):
             "selfUrl": self.selfUrl,
         }
 
+class LanRackSwitch(SanRackSwitch):
+    pass
+
 class LanRouter(PhysicalInfrastructureNode):
     @model_serializer(mode="wrap")
     def _serialize(self, serializer):
@@ -758,4 +762,11 @@ def get_lan_router(lan_router_name : str) -> Host | None:
     r = safe_object_query(f'objectSchemaId IN "{cmdb_id}" AND objectType = "{JiraTypes.LAN_ROUTER}" AND Name = "{lan_router_name}"')
     if (r):
         return LanRouter.model_validate(r)
+    return None
+
+def get_lan_rack_switch(switch_name : str) -> Host | None:
+    logging.info(f"{switch_name}")
+    r = safe_object_query(f'objectSchemaId IN "{cmdb_id}" AND objectType = "{JiraTypes.LAN_RACK_SWITCH}" AND Name = "{switch_name}"')
+    if (r):
+        return LanRackSwitch.model_validate(r)
     return None
