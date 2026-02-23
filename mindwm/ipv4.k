@@ -38,9 +38,8 @@ makeRefIp = lambda ip : str, all_objects : any -> Ip4 {
     ]
   if match_ip and match_ip[0]:
     r = make(match_ip[0][0])
-  else:
-    if "Ip {ip}" in all_objects:
-      r = make(all_objects["Ip ${ip.ip}"]["ip4"][0])
+  if not r and "Ip ${ip}" in all_objects:
+      r = make(all_objects["Ip ${ip}"]["ip4"][0])
   if not r:
     r = make({
       ip = ip

@@ -28,6 +28,7 @@ class JiraTypes(StrEnum):
     FIREWALL = "Firewall"
     NAS = "NAS"
     OFFICE = "Office"
+    LAN_ROUTER = "LAN Routers"
 
 class JiraAttributeID(IntEnum):
     #dc
@@ -590,6 +591,24 @@ class SanRackSwitch(PhysicalInfrastructureNode):
             "selfUrl": self.selfUrl,
         }
 
+class LanRouter(PhysicalInfrastructureNode):
+    @model_serializer(mode="wrap")
+    def _serialize(self, serializer):
+        base: Dict[str, Any] = serializer(self)
+        return {
+            "name": self.name,
+            "created": self.created,
+            "updated": self.updated,
+            "location": self.location,
+            "networkInterface": self.networkInterface,
+            "team": self.team,
+            "owner": self.owner,
+            "rackId": self.rackId,
+            "model": self.model,
+            "serial": self.serial,
+            "selfUrl": self.selfUrl,
+        }
+
 class Firewall(PhysicalInfrastructureNode):
     @model_serializer(mode="wrap")
     def _serialize(self, serializer):
@@ -721,4 +740,11 @@ def get_office(office_name : str) -> Host | None:
     r = safe_object_query(f'objectSchemaId IN "{cmdb_id}" AND objectType = "{JiraTypes.OFFICE}" AND Name = "{office_name}"')
     if (r):
         return Office.model_validate(r)
+    return None
+
+def get_lan_router(lan_router_name : str) -> Host | None:
+    logging.info(f"{lan_router_name}")
+    r = safe_object_query(f'objectSchemaId IN "{cmdb_id}" AND objectType = "{JiraTypes.LAN_ROUTER}" AND Name = "{lan_router_name}"')
+    if (r):
+        return LanRouter.model_validate(r)
     return None

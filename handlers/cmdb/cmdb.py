@@ -8,7 +8,7 @@ import utils
 from dotenv import load_dotenv
 from colorama import Fore, Style
 import pprint
-from model import ObjectEntry,JiraTypes,DataCenter,Host,User,SanRackSwitch,Firewall,NAS
+from model import ObjectEntry,JiraTypes,DataCenter,Host,User,SanRackSwitch,Firewall,NAS,LanRouter
 import yaml
 
 import logging
@@ -59,6 +59,7 @@ if __name__ == "__main__":
     san_rack_switch = []
     firewall = []
     nas = []
+    lan_router = []
 
     all_results = utils.execute_aql_query(aql_query)
     objects = [ObjectEntry.model_validate(o) for o in all_results["objectEntries"]]
@@ -88,6 +89,10 @@ if __name__ == "__main__":
             switch = NAS.model_validate(obj.model_dump(by_alias=True))
             nas.append(switch)
 
+        if obj.get_type() == JiraTypes.LAN_ROUTER:
+            switch = LanRouter.model_validate(obj.model_dump(by_alias=True))
+            lan_router.append(switch)
+
 
 
     if datacenters:
@@ -112,6 +117,10 @@ if __name__ == "__main__":
 
     if nas:
         output = {"cmdb.nas": [storage.model_dump(mode="json") for storage in nas]}
+        print(yaml.safe_dump(output, allow_unicode=True, sort_keys=False))
+
+    if lan_router:
+        output = {"cmdb.lan_router": [router.model_dump(mode="json") for router in lan_router]}
         print(yaml.safe_dump(output, allow_unicode=True, sort_keys=False))
 
 
