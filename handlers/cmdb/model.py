@@ -24,13 +24,20 @@ CACHE_TTL = 60 * 60 * 24  # 1 day
 os.makedirs(CACHE_DIR, exist_ok=True)
 
 class JiraTypes(StrEnum):
+    # locations
     DATACENTER = "DataCenter"
-    HOST = "Host"
+    CLOUD = "Cloud"
+    OFFICE = "Office"
+
+    # users
     USER = "User"
+    TEAM = "Team"
+
+    # hosts
+    HOST = "Host"
     SAN_RACK_SWITCH = "SAN Rack Switch"
     FIREWALL = "Firewall"
     NAS = "NAS"
-    OFFICE = "Office"
     LAN_ROUTER = "LAN Routers"
     LAN_RACK_SWITCH = "LAN Rack Switch"
 
@@ -189,6 +196,7 @@ class ObjectEntry(BaseModel):
         return None
 
 class Location(ObjectEntry):
+    locType: ClassVar[str]
 
     @computed_field
     @property
@@ -250,13 +258,20 @@ class Location(ObjectEntry):
             "updated": self.updated,
             "status": self.status,
             "documentation": self.documentationUrl,
-            "location": self.location
+            "location": self.location,
+            "locType": str(self.locType)
         }
 
 class Office(Location):
+    locType = JiraTypes.OFFICE
+    pass
+
+class Cloud(Location):
+    locType = JiraTypes.CLOUD
     pass
 
 class DataCenter(Location):
+    locType = JiraTypes.DATACENTER
     @computed_field
     @property
     def country(self) -> str|None:
@@ -283,7 +298,8 @@ class DataCenter(Location):
             "country": self.country,
             "location": self.location,
             "number": self.number,
-            "status": self.status
+            "status": self.status,
+            "locType": str(self.locType)
         }
 
 class Team(ObjectEntry):
@@ -335,15 +351,25 @@ class InfrastructureNode(ObjectEntry):
 
     @computed_field
     @property
-    def location(self) -> DataCenter|Office|None:
-        r = self.getAttributeValueById(self.assetId["location"])
-        if (r):
-            dc = get_dc(r)
-            if dc:
-                return dc
-            office = get_office(r)
-            if office:
-                return office
+    def location(self) -> DataCenter|Office|Cloud|None:
+        loc = self.getAttributeById(self.assetId["location"])
+
+        if not loc or not loc.objectAttributeValues:
+            return None
+
+        try:
+            location_type = loc.objectAttributeValues[0].referencedObject["objectType"]["name"]
+            value = self.getAttributeValueById(self.assetId["location"])
+
+            if location_type == JiraTypes.DATACENTER:
+                return get_dc(value)
+            if location_type == JiraTypes.OFFICE:
+                return get_office(value)
+            if location_type == JiraTypes.CLOUD:
+                return get_cloud(value)
+        except:
+            pass
+
         return None
 
     @computed_field
@@ -769,4 +795,11 @@ def get_lan_rack_switch(switch_name : str) -> Host | None:
     r = safe_object_query(f'objectSchemaId IN "{cmdb_id}" AND objectType = "{JiraTypes.LAN_RACK_SWITCH}" AND Name = "{switch_name}"')
     if (r):
         return LanRackSwitch.model_validate(r)
+    return None
+
+def get_cloud(cloud_name : str) -> Host | None:
+    logging.info(f"{cloud_name}")
+    r = safe_object_query(f'objectSchemaId IN "{cmdb_id}" AND objectType = "{JiraTypes.CLOUD}" AND Name = "{cloud_name}"')
+    if (r):
+        return Cloud.model_validate(r)
     return None

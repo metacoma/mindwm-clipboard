@@ -57,6 +57,7 @@ if __name__ == "__main__":
     TYPE_MAP = {
         JiraTypes.DATACENTER: (DataCenter, "cmdb.dc"),
         JiraTypes.HOST: (Host, "cmdb.host"),
+        JiraTypes.TEAM: (User, "cmdb.team"),
         JiraTypes.USER: (User, "cmdb.user"),
         JiraTypes.SAN_RACK_SWITCH: (SanRackSwitch, "cmdb.san_rack_switch"),
         JiraTypes.FIREWALL: (Firewall, "cmdb.firewall"),

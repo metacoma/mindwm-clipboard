@@ -1,6 +1,7 @@
 import mindwm.cmdb.schema as schema
 import kando.utils as utils
 import kando.schema as kando
+import kando.images as images
 import regex
 
 schema Location(schema.Object):
@@ -34,6 +35,8 @@ schema DC(Location):
       i = utils.country_icon("BY")
     if country == "Greece":
       i = utils.country_icon("GR")
+    if location and location == "Cloud":
+      i = utils.makeIcon(images.COMPUTE_CLOUD)
     i
   }
 
@@ -58,6 +61,8 @@ make = lambda obj: any, all_objects : any -> DC {
         country = "Belarus"
       if regex.match(obj.location, ".*(Grieķija).*"):
         country = "Greece"
+    if obj.locType and obj.locType == "Cloud":
+      location = "Cloud"
     if name == "KZS":
       country = "Kazakhstan"
     if obj.number:
