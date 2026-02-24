@@ -17,6 +17,7 @@ import mindwm.cmdb.hosts.nas as nas
 import mindwm.cmdb.hosts.lan_router as lan_router
 import mindwm.cmdb.hosts.lan_rack_switch as lan_rack_switch
 import mindwm.cmdb.vhost as vhost
+import mindwm.cmdb.database as database
 import file
 import yaml
 
@@ -150,6 +151,11 @@ object_by_type = lambda t : str, obj: any -> any {
       vhost.make(_vhost, _all_objects)
       for _vhost in obj
     ]
+  if t == "cmdb.database":
+    r = [
+      database.make(_db, _all_objects)
+      for _db in obj
+    ]
 
   r
 }
@@ -197,6 +203,8 @@ child = lambda obj : any -> kando.Child {
     child = lan_rack_switch.makeMenu(obj)
   if typeof(obj) == "VHost":
     child = vhost.makeMenu(obj)
+  if typeof(obj) == "Database":
+    child = database.makeMenu(obj)
   child
 }
 

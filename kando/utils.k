@@ -136,7 +136,7 @@ makeServiceIcon = lambda service : str -> str {
   #if regex.match(service, "PostgreSQL"):
   if (service == "PostgreSQL"):
     icon = makeIcon(images.POSTGRESQL)
-  if (service == "Jenkins"):
+  if regex.match(service, "Jenkins.*"):
     icon = makeIcon(images.JENKINS)
   if regex.match(service, "Nginx.*"):
     icon = makeIcon(images.NGINX)

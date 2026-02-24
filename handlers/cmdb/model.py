@@ -43,6 +43,9 @@ class JiraTypes(StrEnum):
 
     # other
     VHOST = "vHost"
+
+    # database
+    DATABASE = "Database"
 class JiraAttributeID(IntEnum):
     #dc
     DC_LOCATION = 16877
@@ -81,6 +84,11 @@ class JiraAttributeID(IntEnum):
     #vhost
     VHOST_PORT = 79291
     VHOST_HOST = 79293
+
+    #database
+    DB_HOST = 78911
+    DB_SIZE = 78914
+    DB_HEAD = 78910
 
 class ObjectAttributeValue(BaseModel):
     model_config = ConfigDict(extra="allow")
@@ -200,6 +208,24 @@ class ObjectEntry(BaseModel):
         if self.links:
             return self.links.get("self")
         return None
+
+    def get_display_name_by_id(self, attribute_id) -> str|None:
+        attr_obj = self.getAttributeById(attribute_id)
+
+        if not attr_obj:
+            return None
+
+        attr = attr_obj.model_dump()
+
+        values = attr.get("objectAttributeValues") or []
+        first = values[0] if values else {}
+
+        #avatarUrl = first.get("user", {}).get("avatarUrl")
+        #name = first.get("user", {}).get("name")
+        displayName = first.get("user", {}).get("displayName")
+
+        return displayName
+
 
 class Location(ObjectEntry):
     locType: ClassVar[str]
@@ -733,6 +759,51 @@ class VHost(ObjectEntry):
         }
 
 
+class Database(ObjectEntry):
+    @computed_field
+    @property
+    def head(self) -> User|None:
+        display_name = self.get_display_name_by_id(JiraAttributeID.DB_HEAD)
+        if (display_name):
+            return get_user(display_name)
+        return None
+    @computed_field
+    @property
+    def size(self) -> str|None:
+        r = self.getAttributeValueById(JiraAttributeID.DB_SIZE)
+        return r
+    @computed_field
+    @property
+    def hostNames(self) -> List[str]|None:
+        hosts = self.getAttributeById(JiraAttributeID.DB_HOST)
+        if not hosts:
+            return []
+
+        hostnames = [
+            h.displayValue
+            for h in hosts.objectAttributeValues
+        ]
+        return list(dict.fromkeys(hostnames))
+
+
+    @model_serializer(mode="wrap")
+    def _serialize(self, serializer):
+        base: Dict[str, Any] = serializer(self)
+        return {
+            "name": self.name,
+            "created": self.created,
+            "updated": self.updated,
+            "selfUrl": self.selfUrl,
+            "hostNames": self.hostNames,
+            "hosts": [
+                host
+                for host_name in self.hostNames
+                if (host := get_host(host_name)) is not None
+             ],
+            "size": self.size,
+            "head": self.head
+        }
+
 # utils
 def _cache_path(key: str) -> str:
     h = hashlib.sha256(key.encode()).hexdigest()
@@ -851,9 +922,16 @@ def get_cloud(cloud_name : str) -> Host | None:
     return None
 
 
-def get_vhost(vhost_name : str) -> Host | None:
+def get_vhost(vhost_name : str) -> VHost | None:
     logging.info(f"{vhost_name}")
     r = safe_object_query(f'objectSchemaId IN "{cmdb_id}" AND objectType = "{JiraTypes.VHOST}" AND Name = "{vhost_name}"')
     if (r):
         return VHost.model_validate(r)
+    return None
+
+def get_database(database_name : str) -> Database | None:
+    logging.info(f"{database_name}")
+    r = safe_object_query(f'objectSchemaId IN "{cmdb_id}" AND objectType = "{JiraTypes.DATABASE}" AND Name = "{database_name}"')
+    if (r):
+        return Database.model_validate(r)
     return None

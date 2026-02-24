@@ -23,10 +23,13 @@ schema Domain:
 makeNameserver = lambda obj: any, all_objects: any -> Nameserver {
   Nameserver {
     name = obj.nameserver
-    ip_addresses = [
-      ipv4.make(all_objects["Ip ${ip.ip}"]["ip4"][0])
-      for ip in obj.ipv4
-    ]
+    if obj.ipv4:
+      ip_addresses = [
+        ipv4.make(all_objects["Ip ${ip.ip}"]["ip4"][0])
+        for ip in obj.ipv4
+      ]
+    else:
+      ip_addresses = []
   }
 }
 
