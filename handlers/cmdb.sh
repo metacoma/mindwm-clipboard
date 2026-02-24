@@ -5,16 +5,17 @@ source "$SCRIPT_DIR/utils.sh"
 source ${SCRIPT_DIR}/cmdb/.venv/bin/activate
 
 cmdb_keywords() {
+  sed 's/\?//g' |
   awk '
     FNR==NR {
-      allowed[$0]=1
+      allowed[$0]=tolower(1)
       next
     }
     {
       for (i=1; i<=NF; i++) {
         if ($i ~ /^[0-9]$/) continue
-        if (allowed[$i] && !seen[$i]++) {
-          print $i
+        if (allowed[tolower($i)] && !seen[tolower($i)]++) {
+          print tolower($i)
         }
       }
     }
