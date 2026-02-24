@@ -77,7 +77,8 @@ makeMenu = lambda host : any -> kando.Child {
       if host.service:
         utils.showText({
           text = ",".join(host.service)
-          icon = "⚙️"
+          #icon = "⚙️"
+          icon = utils.makeServiceIcon(",".join(host.service))
         })
     ] + [
         utils.makeSubmenu({

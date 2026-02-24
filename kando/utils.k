@@ -3,6 +3,7 @@ import config as config
 import file
 import base64
 import kando.images as images
+import regex
 
 schema SubMenuArgs:
   name: str
@@ -130,6 +131,13 @@ showOperatingSystem = lambda name : str -> kando.Text {
   }
 }
 
+makeServiceIcon = lambda service : str -> str {
+  icon = "⚙️"
+  #if regex.match(service, "PostgreSQL"):
+  if (service == "PostgreSQL"):
+    icon = makeIcon(images.POSTGRESQL)
+  icon
+}
 
 
 country_icon = lambda country -> str {
