@@ -37,6 +37,7 @@ schema ZabbixContainer:
 
 schema ZabbixPostgresDb:
   name: str
+  size: str
 
 schema ZabbixPostgres:
   replication?: str
@@ -120,6 +121,7 @@ makeHost = lambda obj: any, all_objects: any -> ZabbixHost {
         database = [
           ZabbixPostgresDb {
             name = db.name
+            size = db.size
           }
           for db in obj.postgres.database
         ]
@@ -242,6 +244,7 @@ makeMenu = lambda host : any -> [kando.Child] {
                   cmd = utils.runTerminal("ssh -t jumphost ssh -t ${hostIp} \"sudo -u postgres psql ${db.name}\"")
                   icon = utils.makeIcon(images.TERMINAL)
                 })
+              zabbixGraphShow(zabbixHost.name, db.size, "DB ${db.name}: Size", utils.makeIcon(images.SIZE))
             ]
           })
           for db in zabbixHost.postgres.database

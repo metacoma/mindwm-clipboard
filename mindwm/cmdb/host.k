@@ -65,7 +65,7 @@ makeMenu = lambda host : any -> kando.Child {
         utils.makeCommand({
           name = "ssh"
           icon = utils.makeIcon(images.TERMINAL)
-          cmd = utils.runTerminal("ssh -t fonbet ssh ${host.networkInterface[0].ip}")
+          cmd = utils.runTerminal("ssh -t jumphost ssh ${host.networkInterface[0].ip}")
         })
       if host.vipIp:
         utils.makeSubmenu({

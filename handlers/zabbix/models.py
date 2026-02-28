@@ -9,6 +9,7 @@ import pyzabbix
 from pydantic import BaseModel, Field, computed_field, model_serializer
 
 import re
+import humanize
 
 import logging
 from kando_icon import generate_kando_icon
@@ -486,8 +487,10 @@ class ZbxHostLinux(ZbxHost):
                     dbName = dbName.group(1)
                 else:
                     continue
+                dbSize = self.getItemValueByName(f"DB [{dbName}]: Database size")
                 postgres["database"].append({
                     "name": dbName,
+                    "size": humanize.naturalsize(dbSize, binary=True)
                 })
         replication = self.getItemValueByName("Replication: Master IP")
         if replication and replication != "empty":

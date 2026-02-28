@@ -24,7 +24,7 @@ MENUS_FILE = os.environ.get("TMP_INPUT")
 
 PATH_VALUE = os.environ.get("EWW_BUTTON_PATH", "/tmp/abc.json")
 SKIP_ROOT_NAME = os.environ.get("EWW_SKIP_ROOT", "root")
-LIMIT = int(os.environ.get("EWW_LIMIT", "25"))
+LIMIT = int(os.environ.get("EWW_LIMIT", "15"))
 
 DRY_RUN = os.environ.get("EWW_DRY_RUN") == "1"
 PRESERVE_YAML_ORDER = os.environ.get("EWW_PRESERVE_YAML_ORDER") == "1"

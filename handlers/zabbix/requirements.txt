@@ -2,3 +2,4 @@ pyzabbix
 pyyaml
 pydantic
 pillow
+humanize
