@@ -490,7 +490,7 @@ class ZbxHostLinux(ZbxHost):
                     "name": dbName,
                 })
         replication = self.getItemValueByName("Replication: Master IP")
-        if (replication):
+        if replication and replication != "empty":
             postgres["replication"] = replication
 
         return postgres
