@@ -22,7 +22,7 @@ logging.basicConfig(
 )
 
 load_dotenv()
-cmdb_id = os.getenv('asset_zabbix_6')
+cmdb_id = os.getenv('CMDB_ID')
 
 def is_ip_address(input_string):
     ip_pattern = r'^(\d{1,3}\.){1,3}\d{0,3}$'
