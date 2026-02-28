@@ -105,7 +105,7 @@ makeMenu = lambda host : any -> kando.Child {
           children = team.makeMenu(host_team).children
         })
         for host_team in host.team
-    ] + zabbix.makeMenu(host.zabbixHost)
+    ] + zabbix.makeMenu(host)
 
   }
 }

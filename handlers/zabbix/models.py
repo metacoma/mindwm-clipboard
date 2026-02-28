@@ -292,7 +292,8 @@ class ZbxHostFirewall(ZbxHost):
             "networkInterface": [],
             "disk": [],
             "fs": [],
-            "container": []
+            "container": [],
+            "postgres": []
         }
 
 
@@ -385,7 +386,8 @@ class ZbxHostWindows(ZbxHost):
             "networkInterface": self.getNetworkInterface(),
             "disk": self.getDisk(),
             "fs": self.getFilesystem(),
-            "container": []
+            "container": [],
+            "postgres": [],
         }
 
 @ZbxHost.register
@@ -457,10 +459,34 @@ class ZbxHostLinux(ZbxHost):
                 containerName = re.search(r'Container /(.*): Get info', item.name)
                 if containerName:
                     containerName = containerName.group(1)
+                else:
+                    continue
+                memory = self.getItemValueByName(f"Container /{containerName}: Memory usage")
+                status = self.getItemValueByName(f"Container /{containerName}: Status")
+                cpu = self.getItemValueByName(f"Container /{containerName}: CPU percent usage")
+
+                if containerName:
                     container.append({
                         "name": containerName,
+                        "cpu": f"{float(cpu):.2f}%",
+                        "mem": str(int(int(memory)/1024/1024)) + "MB",
+                        "status": status
                     })
         return container
+
+    def getPostgresDatabase(self) -> List:
+        db = []
+        for item in self.items:
+            if item.name.endswith("Backends connected"):
+                dbName = re.search(r'^DB (.*): Backends connected', item.name)
+                if dbName:
+                    dbName = dbName.group(1)
+                else:
+                    continue
+                db.append({
+                    "name": dbName,
+                })
+        return db
 
     @model_serializer(mode="wrap")
     def _serialize(self, serializer):
@@ -488,7 +514,8 @@ class ZbxHostLinux(ZbxHost):
              "networkInterface": self.getNetworkInterface(),
              "disk": self.getDisk(),
              "fs": self.getFilesystem(),
-             "container": self.getContainer()
+             "container": self.getContainer(),
+             "postgres": self.getPostgresDatabase()
         }
 
 

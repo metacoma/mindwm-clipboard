@@ -31,6 +31,12 @@ schema ZabbixFilesystem:
 
 schema ZabbixContainer:
   name: str
+  cpu: str
+  mem: str
+  status: str
+
+schema ZabbixPostgres:
+  name: str
 
 schema ZabbixHost:
   name: str
@@ -52,6 +58,7 @@ schema ZabbixHost:
   disk: [ZabbixDisk]
   filesystem: [ZabbixFilesystem]
   container: [ZabbixContainer]
+  postgres: [ZabbixPostgres]
 
 schema ZabbixHostLinux(ZabbixHost):
 schema ZabbixHostWindows(ZabbixHost):
@@ -98,8 +105,17 @@ makeHost = lambda obj: any, all_objects: any -> ZabbixHost {
     container = [
       ZabbixContainer {
         name = c.name
+        cpu = c.cpu
+        mem = c.mem
+        status = c.status
       }
       for c in obj.container
+    ]
+    postgres = [
+      ZabbixPostgres {
+        name = db.name
+      }
+      for db in obj.postgres
     ]
   }
 }
@@ -117,48 +133,52 @@ getHost = lambda all_objects: any, host_name : str -> any {
 }
 
 makeMenu = lambda host : any -> [kando.Child] {
+  hostIp = None
+  if host.networkInterface and host.networkInterface[0]:
+    hostIp = host.networkInterface[0].ip
+  zabbixHost = host.zabbixHost
   [
     utils.makeURI({
       name = "Zabbix"
       icon = utils.makeIcon(images.ZABBIX)
-      uri = host.url
+      uri = zabbixHost.url
     })
     utils.showText({
-      text = host.uptime.lastvalue
+      text = zabbixHost.uptime.lastvalue
       icon = utils.makeIcon(images.UPTIME)
     })
-    zabbixItemGraphShow(host, host.cpu_util, "CPU utilization", utils.makeIcon(images.CPU))
-    zabbixItemGraphShow(host, host.memory_util, "Memory utilization", utils.makeIcon(images.MEMORY))
+    zabbixItemGraphShow(zabbixHost, zabbixHost.cpu_util, "CPU utilization", utils.makeIcon(images.CPU))
+    zabbixItemGraphShow(zabbixHost, zabbixHost.memory_util, "Memory utilization", utils.makeIcon(images.MEMORY))
   ] + [
-    if host.disk:
+    if zabbixHost.disk:
       utils.makeSubmenu({
         name = "Disks"
         icon = utils.makeIcon(images.HDD)
         children = [
-          zabbixGraphShow(host.name, disk.name, "${disk.name}: Disk read/write rates", utils.makeIcon(images.HDD))
-          for disk in host.disk
+          zabbixGraphShow(zabbixHost.name, disk.name, "${disk.name}: Disk read/write rates", utils.makeIcon(images.HDD))
+          for disk in zabbixHost.disk
         ]
       })
-    if host.networkInterface:
+    if zabbixHost.networkInterface:
       utils.makeSubmenu({
         name = "Network"
         icon = utils.makeIcon(images.NETWORK_CARD)
         children = [
-          zabbixGraphShow(host.name, netIf.name, netIf.graphName, utils.makeIcon(images.NETWORK_CARD))
-          for netIf in host.networkInterface
+          zabbixGraphShow(zabbixHost.name, netIf.name, netIf.graphName, utils.makeIcon(images.NETWORK_CARD))
+          for netIf in zabbixHost.networkInterface
         ]
       })
-    if host.filesystem:
+    if zabbixHost.filesystem:
       utils.makeSubmenu({
         name = "Filesystem"
         icon = utils.makeIcon(images.FS)
         children = [
-          zabbixGraphShow(host.name, fs.name, fs.graphName, fs.icon)
-          for fs in host.filesystem
+          zabbixGraphShow(zabbixHost.name, fs.name, fs.graphName, fs.icon)
+          for fs in zabbixHost.filesystem
         ]
       })
 
-    if host.filesystem:
+    if zabbixHost.container:
       utils.makeSubmenu({
         name = "Container"
         icon = utils.makeIcon(images.DOCKER)
@@ -182,11 +202,36 @@ makeMenu = lambda host : any -> [kando.Child] {
                 cmd = "restart"
                 icon = utils.makeIcon(images.KILL)
               })
+              zabbixGraphShow(zabbixHost.name, container.mem, "Container /${container.name}: Memory usage", utils.makeIcon(images.MEMORY))
+              zabbixGraphShow(zabbixHost.name, container.cpu, "Container /${container.name}: CPU usage", utils.makeIcon(images.CPU))
             ]
           })
-          for container in host.container
+          for container in zabbixHost.container
         ]
       })
+
+    if zabbixHost.postgres:
+      utils.makeSubmenu({
+        name = "Postgres"
+        icon = utils.makeIcon(images.POSTGRESQL)
+        children = [
+          utils.makeSubmenu({
+            name = db.name
+            icon = utils.makeIcon(images.DATABASE)
+            children = [
+              if hostIp:
+                utils.makeCommand({
+                  name = "Exec"
+                  cmd = utils.runTerminal("ssh -t jumphost ssh -t ${hostIp} \"sudo -u postgres psql ${db.name}\"")
+                  icon = utils.makeIcon(images.TERMINAL)
+                })
+            ]
+          })
+          for db in zabbixHost.postgres
+        ]
+      })
+
+
 
   ]
 }
