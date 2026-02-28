@@ -27,6 +27,7 @@ schema ZabbixFilesystem:
   name: str
   util: str
   icon: str
+  graphName: str
 
 schema ZabbixHost:
   name: str
@@ -86,6 +87,7 @@ makeHost = lambda obj: any, all_objects: any -> ZabbixHost {
         name = fs.name
         util = fs.util
         icon = fs.icon
+        graphName = fs.graphName
       }
       for fs in obj.fs
     ]
@@ -141,7 +143,7 @@ makeMenu = lambda host : any -> [kando.Child] {
         name = "Filesystem"
         icon = utils.makeIcon(images.FS)
         children = [
-          zabbixGraphShow(host.name, fs.name, "", fs.icon)
+          zabbixGraphShow(host.name, fs.name, fs.graphName, fs.icon)
           for fs in host.filesystem
         ]
       })

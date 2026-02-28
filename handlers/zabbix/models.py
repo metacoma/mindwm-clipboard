@@ -332,7 +332,7 @@ class ZbxHostWindows(ZbxHost):
         disk = []
         for item in self.items:
             if item.name.endswith("Disk read rate"):
-                diskId = re.search(r'^([0-9]+?): Disk read rate', item.name)
+                diskId = re.search(r'^[0-9]? ?([0-9]+?): Disk read rate', item.name)
                 if diskId:
                     diskId = diskId.group(1)
                     disk.append({
@@ -353,7 +353,8 @@ class ZbxHostWindows(ZbxHost):
                     fs.append({
                         "name": fsName,
                         "util": util,
-                        "icon": generate_kando_icon(util)
+                        "icon": generate_kando_icon(util),
+                        "graphName": f"Windows({fsName}): Disk space usage"
                     })
         return fs
 
@@ -442,7 +443,8 @@ class ZbxHostLinux(ZbxHost):
                     fs.append({
                         "name": fsName,
                         "util": util,
-                        "icon": generate_kando_icon(util)
+                        "icon": generate_kando_icon(util),
+                        "graphName": f"{fsName}: Disk space usage",
                     })
         return fs
 
