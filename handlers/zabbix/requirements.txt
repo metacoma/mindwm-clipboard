@@ -1,0 +1,4 @@
+pyzabbix
+pyyaml
+pydantic
+pillow
