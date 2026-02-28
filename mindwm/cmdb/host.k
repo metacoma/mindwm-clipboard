@@ -5,10 +5,13 @@ import mindwm.ipv4 as ipv4
 import mindwm.cmdb.datacenter as datacenter
 import mindwm.cmdb.team as team
 import mindwm.cmdb.user as user
+import mindwm.zabbix.schema as zabbix
+import kando.images as images
 
 schema Host(schema.Object):
   dc?: datacenter.DC
   networkInterface?: [ipv4.Ip4] = []
+  zabbixHost?: zabbix.ZabbixHost #|zabbix.ZabbixHostLinux|zabbix.ZabbixHostWindows|zabbix.ZabbixHostForti
   team?: [team.Team]
   owner?: user.User
   os?: str
@@ -24,10 +27,12 @@ schema PhysicalHost(Host):
   model?: str
 
 make = lambda obj: any, all_objects : any -> Host {
-  #print("XXX {obj}")
   Host {
     name = obj.name
     selfUrl = obj.selfUrl
+    zabbixHost = zabbix.getHost(all_objects, obj.name)
+
+
     if obj.location:
       dc = datacenter.make(obj.location, all_objects)
     if obj.networkInterface:
@@ -56,6 +61,12 @@ makeMenu = lambda host : any -> kando.Child {
         icon = "🧩"
         uri = host.selfUrl
       })
+      if host.networkInterface and host.os and host.os != "Windows":
+        utils.makeCommand({
+          name = "ssh"
+          icon = utils.makeIcon(images.TERMINAL)
+          cmd = utils.runTerminal("ssh -t fonbet ssh ${host.networkInterface[0].ip}")
+        })
       if host.vipIp:
         utils.makeSubmenu({
           name = "VIP: ${host.vipIp.ip}"
@@ -68,12 +79,12 @@ makeMenu = lambda host : any -> kando.Child {
           icon = host.dc.icon()
           children = datacenter.makeMenu(host.dc).children
         })
-      if host.owner:
-        utils.makeSubmenu({
-          name = host.owner.name
-          icon = host.owner.avatar
-          children = user.makeMenu(host.owner).children
-        })
+      # if host.owner:
+      #   utils.makeSubmenu({
+      #     name = host.owner.name
+      #     icon = host.owner.avatar
+      #     children = user.makeMenu(host.owner).children
+      #   })
       if host.service:
         utils.showText({
           text = ",".join(host.service)
@@ -94,6 +105,7 @@ makeMenu = lambda host : any -> kando.Child {
           children = team.makeMenu(host_team).children
         })
         for host_team in host.team
-    ]
+    ] + zabbix.makeMenu(host.zabbixHost)
+
   }
 }
