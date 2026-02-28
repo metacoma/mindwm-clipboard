@@ -8,7 +8,7 @@ import mindwm.cmdb.host as host
 schema Database(schema.Object):
   hostNames?: [str]
   hosts: [host.Host] = []
-  head: user.User = None
+  head?: user.User = None
   size: str
   icon = lambda -> str {
     utils.makeIcon(images.DATABASE)
