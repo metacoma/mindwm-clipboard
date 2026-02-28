@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field, computed_field, model_serializer
 import re
 
 import logging
+from kando_icon import generate_kando_icon
 
 logger = logging.getLogger(__name__)
 
@@ -420,9 +421,11 @@ class ZbxHostLinux(ZbxHost):
                 fsName = re.search(r'^(/[^:]+): Free disk space in %', item.name)
                 if fsName:
                     fsName = fsName.group(1)
+                    util = f"{100-float(item.lastvalue):.2f}%"
                     fs.append({
                         "name": fsName,
-                        "util": f"{100-float(item.lastvalue):.2f}%"
+                        "util": util,
+                        "icon": generate_kando_icon(util)
                     })
         return fs
 
