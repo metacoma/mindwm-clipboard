@@ -8,6 +8,11 @@ from typing import Any, Dict, List, Optional, Type, Sequence, ClassVar
 import pyzabbix
 from pydantic import BaseModel, Field, computed_field, model_serializer
 
+import re
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 def _utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -61,11 +66,11 @@ class ZbxItem(BaseModel):
     itemid: str
     hostid: Optional[str] = None
     name: Optional[str] = None
-    key_: Optional[str] = None  # Zabbix поле называется key_
+    key_: Optional[str] = None
     type: Optional[str] = None
     value_type: Optional[str] = None
-    status: Optional[str] = None  # 0 enabled, 1 disabled
-    state: Optional[str] = None   # 0 normal, 1 not supported
+    status: Optional[str] = None
+    state: Optional[str] = None
     lastvalue: Optional[str] = None
     lastclock: Optional[str] = None
     delay: Optional[str] = None
@@ -73,6 +78,18 @@ class ZbxItem(BaseModel):
     description: Optional[str] = None
     error: Optional[str] = None
 
+    @computed_field
+    @property
+    def serialize(self) -> Dict:
+        return {
+            "name": self.name,
+            "itemid": self.itemid,
+            "state": self.state,
+            "status": self.status,
+            "lastvalue": self.lastvalue,
+            "key": self.key_,
+            "description": self.description
+        }
 
 class ZbxHost(BaseModel):
     hostname: str
@@ -94,6 +111,11 @@ class ZbxHost(BaseModel):
 
 
     _registry: ClassVar[list[type["ZbxHost"]]] = []
+
+
+    @classmethod
+    def get_type(cls) -> str:
+        return cls.__name__
 
     @classmethod
     def register(cls, subclass: Type["ZbxHost"]):
@@ -166,6 +188,62 @@ class ZbxHost(BaseModel):
 
         return None
 
+    def getItemByName(self, item_name: str) -> Optional[ZbxItem|None]:
+        if not item_name:
+            return None
+
+        for item in self.items:
+            if item.name == item_name:
+                return item
+
+        return None
+
+    def getItemByKey(self, key_name: str) -> Optional[ZbxItem|None]:
+        if not key_name:
+            return None
+
+        for item in self.items:
+            if item.key_ == key_name:
+                return item
+
+        return None
+
+    def getSerializedItemByKey(self, key_name: str) -> Dict|None:
+        r = self.getItemByKey(key_name)
+        if not r:
+            return None
+
+        return r.serialize | { "graphName": "", "graphId": "" }
+
+    def getSerializedItemByName(self, item_name: str) -> Dict|None:
+        r = self.getItemByName(item_name)
+        if not r:
+            return None
+
+        return r.serialize
+
+    def itemStub(self, lastvalue: str) -> Dict|None:
+        return {
+            "name": "",
+            "itemid": "",
+            "state": "0",
+            "status": "0",
+            "lastvalue": str(lastvalue),
+            "key": "",
+            "description": "",
+            "graphName": "",
+            "graphId": ""
+        }
+
+
+    def resourceUtilization(self, resourceName) -> str|None:
+        r = self.getItemValueByName(resourceName),
+
+        if (r):
+            return f"{float(r[0]):.2f}%"
+
+        return None
+
 @ZbxHost.register
 class ZbxHostFirewall(ZbxHost):
     @staticmethod
@@ -173,14 +251,47 @@ class ZbxHostFirewall(ZbxHost):
         model = (host.inventory or {}).get("model", "")
         return model.lower().startswith("forti")
 
+    @computed_field
+    @property
+    def cores(self) -> int:
+        cores = 0
+        for item in self.items:
+            if item.name.startswith("CPU Usage ["):
+                cores = cores + 1
+        return cores
+
+    def getCores(self) -> Dict:
+        return self.itemStub(self.cores)
+
+
     @model_serializer(mode="wrap")
     def _serialize(self, serializer):
         base: Dict[str, Any] = serializer(self)
-
         return {
             "name": self.hostname,
-            "url": os.getenv("ZABBIX_URL", "") + f"/zabbix.php?action=host.dashboard.view&hostid={self.hostid}",
+            "url": os.getenv("ZABBIX_URL", "") + f"/zabbix.php?action=charts.view&filter_hostids%5B0%5D={self.hostid}",
+            "hostname": self.itemStub(self.hostname),
+            "arch": self.itemStub("x86"),
+            "uname": self.getSerializedItemByKey("fortinetSystemModel"),
+            "uptime": zabbixItemUptime(self.getSerializedItemByKey("fortinetUpTime")),
+            "cpu": {
+                "utilization": self.getSerializedItemByKey("fortinetCurrentCPUUtil") | {"graphId": get_graph_id_by_itemid(self.getSerializedItemByKey("fortinetCurrentCPUUtil")["itemid"]) },
+
+                "cores": self.getCores()
+            },
+            "swap": {
+                "free": self.itemStub("0"),
+                "size": self.itemStub("0"),
+            },
+            "memory": {
+                "total": self.itemStub("0"),
+                "used": self.itemStub("0"),
+                "util": self.getSerializedItemByKey("fortinetCurrentRAMUtil") | {"graphId": get_graph_id_by_itemid(self.getSerializedItemByKey("fortinetCurrentRAMUtil")["itemid"]) },
+            },
+            "networkInterface": [],
+            "disk": []
         }
+
 
 
 @ZbxHost.register
@@ -189,59 +300,175 @@ class ZbxHostWindows(ZbxHost):
     def matches(host: ZbxHost) -> bool:
         return host.getTagValueByName("OS") == "Windows"
 
+    def getNetworkInterface(self) -> List:
+        interfaces = []
+        for item in self.items:
+            if item.key_.startswith("net.if.type["):
+                interfaceId = re.search(r'\["({[^"]+})"\]', item.key_)
+                if interfaceId:
+                    interfaceId = interfaceId.group(1)
+
+                interfaceName = re.search(r"^.*\((.*?)\):", item.name)
+                if interfaceName:
+                    interfaceName = interfaceName.group(1)
+
+                prefix = re.search(r"(^.*):", item.name)
+                if prefix:
+                    prefix = prefix.group(1)
+
+                if interfaceName and interfaceId and prefix:
+                    interfaces.append({
+                        "name": interfaceName,
+                        "id": interfaceId,
+                        "graphName": f"{prefix}: Network traffic"
+                    })
+
+        return interfaces
+
+
+    def getDisk(self) -> List:
+        disk = []
+        for item in self.items:
+            if item.name.endswith("Disk read rate"):
+                diskId = re.search(r'^([0-9]+?): Disk read rate', item.name)
+                if diskId:
+                    diskId = diskId.group(1)
+                    disk.append({
+                        "name": diskId
+                    })
+
+
+        return disk
+
     @model_serializer(mode="wrap")
     def _serialize(self, serializer):
         base: Dict[str, Any] = serializer(self)
         return {
             "name": self.hostname,
             "url": os.getenv("ZABBIX_URL", "") + f"/zabbix.php?action=host.dashboard.view&hostid={self.hostid}",
+            "hostname": self.getSerializedItemByKey("system.hostname"),
+            "arch": self.getSerializedItemByKey("system.sw.arch"),
+            "uname": self.getSerializedItemByKey("system.uname"),
+            "uptime": zabbixItemUptime(self.getSerializedItemByKey("system.uptime")),
+            "cpu": {
+                "utilization": self.getSerializedItemByKey("system.cpu.util"),
+                "cores": self.getSerializedItemByName("Number of cores")
+            },
+            "swap": {
+                "free": self.getSerializedItemByKey("system.swap.free"),
+                "size": self.getSerializedItemByKey("system.swap.size[,total]")
+            },
+            "memory": {
+                "total": self.getSerializedItemByKey("vm.memory.size[total]"),
+                #"used": self.getSerializedItemByKey("vm.memory.size[used]"),
+                "util": self.getSerializedItemByKey("vm.memory.util"),
+            },
+            "networkInterface": self.getNetworkInterface(),
+            "disk": self.getDisk()
         }
 
 @ZbxHost.register
 class ZbxHostLinux(ZbxHost):
 
+    @computed_field
+    @property
+    def memory_util(self) -> str|None:
+        return self.resourceUtilization("Memory utilization")
+
+    @computed_field
+    @property
+    def cpu_util(self) -> str|None:
+        return self.resourceUtilization("CPU utilization")
+
     @staticmethod
     def matches(host: ZbxHost) -> bool:
         return host.getTagValueByName("OS") == "Linux"
 
+    def getNetworkInterface(self) -> List:
+        interfaces = []
+        for item in self.items:
+            if item.name.endswith("Interface type"):
+                interfaceName = re.search(r"Interface ([^ ]+): Interface type", item.name)
+                if interfaceName:
+                    interfaceName = interfaceName.group(1)
+                    interfaceId = interfaceName
+                    graphName = f"Interface {interfaceName}: Network traffic"
+                    interfaces.append({
+                        "name": interfaceName,
+                        "id": interfaceId,
+                        "graphName": graphName
+                    })
+
+        return interfaces
+
+    def getDisk(self) -> List:
+        disk = []
+        for item in self.items:
+            if item.name.endswith("Disk read rate"):
+                diskId = re.search(r'^([^:]+): Disk read rate', item.name)
+                if diskId:
+                    diskId = diskId.group(1)
+                    disk.append({
+                        "name": diskId
+                    })
+        return disk
+
+    def getFilesystem(self) -> List:
+        fs = []
+        for item in self.items:
+            if item.name.endswith("Free disk space in %"):
+                fsName = re.search(r'^(/[^:]+): Free disk space in %', item.name)
+                if fsName:
+                    fsName = fsName.group(1)
+                    fs.append({
+                        "name": fsName,
+                        "util": f"{100-float(item.lastvalue):.2f}%"
+                    })
+        return fs
+
     @model_serializer(mode="wrap")
     def _serialize(self, serializer):
         base: Dict[str, Any] = serializer(self)
-
         return {
-            "name": self.hostname,
-            "url": os.getenv("ZABBIX_URL", "") + f"/zabbix.php?action=host.dashboard.view&hostid={self.hostid}",
-            "os":  {
-                "short": self.inventory.get("os_short"),
-                "full": self.inventory.get("os")
-            },
-            "memory": {
-                "total": self.getItemValueByName("Total memory"),
-                "util": self.getItemValueByName("Memory utilization"),
-            },
-            "cpu": {
-                "number": self.getItemValueByName("Number of CPUs"),
-                "util": self.getItemValueByName("CPU utilization"),
-            },
-            "load": {
-                "1m": self.getItemValueByName("Load average (1m avg)"),
-                "5m": self.getItemValueByName("Load average (5m avg)"),
-                "15m": self.getItemValueByName("Load average (15m avg)")
-            },
-            "uptime": seconds_to_uptime(self.getItemValueByName("System uptime")),
-            "arch": self.getItemValueByName("Operating system architecture"),
+             "name": self.hostname,
+             "url": os.getenv("ZABBIX_URL", "") + f"/zabbix.php?action=host.dashboard.view&hostid={self.hostid}",
+             "hostname": self.getSerializedItemByKey("system.hostname"),
+             "arch": self.getSerializedItemByKey("system.sw.arch"),
+             "uname": self.getSerializedItemByKey("system.uname"),
+             "uptime": zabbixItemUptime(self.getSerializedItemByKey("system.uptime")),
+             "cpu": {
+                 "utilization": self.getSerializedItemByKey("system.cpu.util"),
+                 "cores": self.getSerializedItemByKey("system.cpu.num"),
+             },
+             "swap": {
+                 "free": self.getSerializedItemByKey("system.swap.size[,free]"),
+                 "size": self.getSerializedItemByKey("system.swap.size[,total]")
+             },
+             "memory": {
+                 "total": self.getSerializedItemByKey("vm.memory.size[total]"),
+                 #"used": self.getSerializedItemByKey("vm.memory.size[used]"), # for linux, used doesn't exist!
+                 "util": self.getSerializedItemByKey("vm.memory.utilization"),
+             },
+             "networkInterface": self.getNetworkInterface(),
+             "disk": self.getDisk(),
+             "fs": self.getFilesystem()
         }
+
 
 def _get_zapi() -> pyzabbix.ZabbixAPI:
     url = os.getenv("ZABBIX_URL", "")
-    auth = os.getenv("ZABBIX_AUTH", "")
+    api_token = os.getenv("ZABBIX_TOKEN", "")
     if not url:
         raise RuntimeError("ZABBIX_URL is empty")
-    if not auth:
-        raise RuntimeError("ZABBIX_AUTH is empty")
+    if not api_token:
+        raise RuntimeError("ZABBIX_TOKEN is empty")
     zapi = pyzabbix.ZabbixAPI(url)
-    zapi.auth = auth
+    zapi.auth = api_token
     return zapi
+
+def get_graph_id_by_itemid(item_id: str) -> str:
+    zapi = _get_zapi()
+    return zapi.graph.get(itemids=[item_id], output=["graphid"])[0]["graphid"]
 
 
 def get_hosts(hostnames: Sequence[str]) -> List[ZbxHost]:
@@ -254,13 +481,20 @@ def get_hosts(hostnames: Sequence[str]) -> List[ZbxHost]:
     for n in names:
         if n not in seen:
             seen.add(n)
-            ordered_names.append(n)
+            ordered_names.append(n.upper())
+            ordered_names.append(n.lower())
+
+    logger.info(ordered_names)
 
     zapi = _get_zapi()
 
     hosts_raw = zapi.host.get(
-        filter={"host": ordered_names},
+        search={"host": ordered_names},
+        #search={"host": ["1FTG-GW04", "4lbdmz-anyfront01"]},
+        searchByAny = True,
+        #startSearch=True,
         output="extend",
+        #searchWildcardsEnabled=False,
         selectInterfaces="extend",
         selectGroups="extend",
         selectParentTemplates="extend",
@@ -335,6 +569,10 @@ def get_hosts(hostnames: Sequence[str]) -> List[ZbxHost]:
 def get_host(hostname: str) -> Optional[ZbxHostLinux]:
     hosts = get_hosts([hostname])
     return hosts[0] if hosts else None
+
+def zabbixItemUptime(d : Dict):
+    return d | { "lastvalue" : seconds_to_uptime(d["lastvalue"]) }
+    return d
 
 def seconds_to_uptime(seconds: int) -> str:
     seconds = int(seconds)
