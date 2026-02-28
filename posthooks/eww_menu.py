@@ -7,6 +7,10 @@ from typing import Any, Dict, List
 
 import yaml
 
+import base64
+import tempfile
+import uuid
+
 
 # =========================
 # CONFIG (env overridable)
@@ -60,10 +64,6 @@ def parse_items(raw: str) -> List[Dict[str, Any]]:
     return val
 
 
-# =========================
-# YAML
-# =========================
-
 def read_yaml() -> Dict[str, Any]:
     # stdin wins (pipe / redirect)
     if not sys.stdin.isatty():
@@ -79,6 +79,43 @@ def title_from_id(id_value: str) -> str:
     return parts[1] if len(parts) > 1 else id_value
 
 
+
+def parse_icon(value: str) -> str:
+    prefix = "data:image/png;base64,"
+
+    if not isinstance(value, str):
+        return value
+
+    if not value.startswith(prefix):
+        return value
+
+    b64_data = value[len(prefix):]
+
+    try:
+        binary_data = base64.b64decode(b64_data)
+    except Exception as e:
+        raise ValueError("Invalid base64 image data") from e
+
+    filename = f"eww_icon_{uuid.uuid4().hex}.png"
+    file_path = os.path.join("/tmp", filename)
+
+    with open(file_path, "wb") as f:
+        f.write(binary_data)
+
+    return file_path
+
+def remove_first_word_if_multiple(text: str) -> str:
+    if not isinstance(text, str):
+        return text
+
+    parts = text.split()
+
+    if len(parts) <= 1:
+        return text
+
+    return " ".join(parts[1:])
+
+
 def extract_buttons(doc: Dict[str, Any]) -> List[Dict[str, str]]:
     out: List[Dict[str, str]] = []
     for m in doc.get("menus", []):
@@ -89,6 +126,8 @@ def extract_buttons(doc: Dict[str, Any]) -> List[Dict[str, str]]:
         if not name or not icon:
             continue
 
+        icon = parse_icon(icon)
+
         name = str(name)
         if name == SKIP_ROOT_NAME:
             continue
@@ -97,9 +136,9 @@ def extract_buttons(doc: Dict[str, Any]) -> List[Dict[str, str]]:
             {
                 "Id": name,
                 "Title": title_from_id(name),
-                "Icon": str(icon),
-                "Command": f"cp {MENUS_FILE} ~/.config/kando/menus.json && kando -m '{name}'",
-                "Path": PATH_VALUE,
+                "Icon": icon,
+                "Command": f"cp {MENUS_FILE} ~/.config/kando/new_menu.json && mv ~/.config/kando/new_menu.json ~/.config/kando/menus.json && kando -m '{name}'",
+                "Path": name,
             }
         )
     return out
