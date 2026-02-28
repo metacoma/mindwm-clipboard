@@ -29,6 +29,9 @@ schema ZabbixFilesystem:
   icon: str
   graphName: str
 
+schema ZabbixContainer:
+  name: str
+
 schema ZabbixHost:
   name: str
   url: str
@@ -48,6 +51,7 @@ schema ZabbixHost:
   networkInterface: [ZabbixNetworkInterface]
   disk: [ZabbixDisk]
   filesystem: [ZabbixFilesystem]
+  container: [ZabbixContainer]
 
 schema ZabbixHostLinux(ZabbixHost):
 schema ZabbixHostWindows(ZabbixHost):
@@ -90,6 +94,12 @@ makeHost = lambda obj: any, all_objects: any -> ZabbixHost {
         graphName = fs.graphName
       }
       for fs in obj.fs
+    ]
+    container = [
+      ZabbixContainer {
+        name = c.name
+      }
+      for c in obj.container
     ]
   }
 }
@@ -145,6 +155,36 @@ makeMenu = lambda host : any -> [kando.Child] {
         children = [
           zabbixGraphShow(host.name, fs.name, fs.graphName, fs.icon)
           for fs in host.filesystem
+        ]
+      })
+
+    if host.filesystem:
+      utils.makeSubmenu({
+        name = "Container"
+        icon = utils.makeIcon(images.DOCKER)
+        children = [
+          utils.makeSubmenu({
+            name = container.name
+            icon = utils.makeIcon(images.CONTAINER)
+            children = [
+              utils.makeCommand({
+                name = "Restart"
+                cmd = "restart"
+                icon = utils.makeIcon(images.RESTART)
+              })
+              utils.makeCommand({
+                name = "Exec"
+                cmd = "restart"
+                icon = utils.makeIcon(images.TERMINAL)
+              })
+              utils.makeCommand({
+                name = "Kill"
+                cmd = "restart"
+                icon = utils.makeIcon(images.KILL)
+              })
+            ]
+          })
+          for container in host.container
         ]
       })
 

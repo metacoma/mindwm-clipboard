@@ -291,7 +291,8 @@ class ZbxHostFirewall(ZbxHost):
             },
             "networkInterface": [],
             "disk": [],
-            "fs": []
+            "fs": [],
+            "container": []
         }
 
 
@@ -383,7 +384,8 @@ class ZbxHostWindows(ZbxHost):
             },
             "networkInterface": self.getNetworkInterface(),
             "disk": self.getDisk(),
-            "fs": self.getFilesystem()
+            "fs": self.getFilesystem(),
+            "container": []
         }
 
 @ZbxHost.register
@@ -448,6 +450,18 @@ class ZbxHostLinux(ZbxHost):
                     })
         return fs
 
+    def getContainer(self) -> List:
+        container = []
+        for item in self.items:
+            if item.name.startswith("Container /"):
+                containerName = re.search(r'Container /(.*): Get info', item.name)
+                if containerName:
+                    containerName = containerName.group(1)
+                    container.append({
+                        "name": containerName,
+                    })
+        return container
+
     @model_serializer(mode="wrap")
     def _serialize(self, serializer):
         base: Dict[str, Any] = serializer(self)
@@ -473,7 +487,8 @@ class ZbxHostLinux(ZbxHost):
              },
              "networkInterface": self.getNetworkInterface(),
              "disk": self.getDisk(),
-             "fs": self.getFilesystem()
+             "fs": self.getFilesystem(),
+             "container": self.getContainer()
         }
 
 
