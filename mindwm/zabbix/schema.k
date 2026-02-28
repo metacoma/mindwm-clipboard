@@ -35,8 +35,12 @@ schema ZabbixContainer:
   mem: str
   status: str
 
-schema ZabbixPostgres:
+schema ZabbixPostgresDb:
   name: str
+
+schema ZabbixPostgres:
+  replication?: str
+  database?: [ZabbixPostgresDb]
 
 schema ZabbixHost:
   name: str
@@ -58,7 +62,7 @@ schema ZabbixHost:
   disk: [ZabbixDisk]
   filesystem: [ZabbixFilesystem]
   container: [ZabbixContainer]
-  postgres: [ZabbixPostgres]
+  postgres: ZabbixPostgres
 
 schema ZabbixHostLinux(ZabbixHost):
 schema ZabbixHostWindows(ZabbixHost):
@@ -111,12 +115,18 @@ makeHost = lambda obj: any, all_objects: any -> ZabbixHost {
       }
       for c in obj.container
     ]
-    postgres = [
-      ZabbixPostgres {
-        name = db.name
-      }
-      for db in obj.postgres
-    ]
+    postgres = {
+      if obj.postgres.database:
+        database = [
+          ZabbixPostgresDb {
+            name = db.name
+          }
+          for db in obj.postgres.database
+        ]
+      if obj.postgres.replication:
+        replication = obj.postgres.replication
+
+    }
   }
 }
 
@@ -210,11 +220,18 @@ makeMenu = lambda host : any -> [kando.Child] {
         ]
       })
 
-    if zabbixHost.postgres:
+    if zabbixHost.postgres.database:
       utils.makeSubmenu({
         name = "Postgres"
         icon = utils.makeIcon(images.POSTGRESQL)
         children = [
+          if (zabbixHost.postgres.replication):
+            utils.makeCommand({
+              name = zabbixHost.postgres.replication
+              cmd = "echo ${zabbixHost.postgres.replication} | xclip -i -selection primary"
+              icon = utils.makeIcon(images.DATABASE_MASTER)
+            })
+        ] + [
           utils.makeSubmenu({
             name = db.name
             icon = utils.makeIcon(images.DATABASE)
@@ -227,7 +244,7 @@ makeMenu = lambda host : any -> [kando.Child] {
                 })
             ]
           })
-          for db in zabbixHost.postgres
+          for db in zabbixHost.postgres.database
         ]
       })
 

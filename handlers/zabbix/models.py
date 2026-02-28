@@ -474,8 +474,11 @@ class ZbxHostLinux(ZbxHost):
                     })
         return container
 
-    def getPostgresDatabase(self) -> List:
-        db = []
+    def getPostgresDatabase(self) -> Dict:
+        postgres = {
+            "database": [],
+            "replication": None
+        }
         for item in self.items:
             if item.name.endswith("Backends connected"):
                 dbName = re.search(r'^DB (.*): Backends connected', item.name)
@@ -483,10 +486,14 @@ class ZbxHostLinux(ZbxHost):
                     dbName = dbName.group(1)
                 else:
                     continue
-                db.append({
+                postgres["database"].append({
                     "name": dbName,
                 })
-        return db
+        replication = self.getItemValueByName("Replication: Master IP")
+        if (replication):
+            postgres["replication"] = replication
+
+        return postgres
 
     @model_serializer(mode="wrap")
     def _serialize(self, serializer):
