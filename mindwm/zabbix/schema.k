@@ -23,6 +23,11 @@ schema ZabbixNetworkInterface:
 schema ZabbixDisk:
   name: str
 
+schema ZabbixFilesystem:
+  name: str
+  util: str
+  icon: str
+
 schema ZabbixHost:
   name: str
   url: str
@@ -41,9 +46,9 @@ schema ZabbixHost:
   memory_util: ZabbixItem
   networkInterface: [ZabbixNetworkInterface]
   disk: [ZabbixDisk]
+  filesystem: [ZabbixFilesystem]
 
 schema ZabbixHostLinux(ZabbixHost):
-
 schema ZabbixHostWindows(ZabbixHost):
 schema ZabbixHostForti(ZabbixHost):
 
@@ -75,6 +80,14 @@ makeHost = lambda obj: any, all_objects: any -> ZabbixHost {
         name = disk.name
       }
       for disk in obj.disk
+    ]
+    filesystem = [
+      ZabbixFilesystem {
+        name = fs.name
+        util = fs.util
+        icon = fs.icon
+      }
+      for fs in obj.fs
     ]
   }
 }
@@ -123,6 +136,16 @@ makeMenu = lambda host : any -> [kando.Child] {
           for netIf in host.networkInterface
         ]
       })
+    if host.filesystem:
+      utils.makeSubmenu({
+        name = "Filesystem"
+        icon = utils.makeIcon(images.FS)
+        children = [
+          zabbixGraphShow(host.name, fs.name, "", fs.icon)
+          for fs in host.filesystem
+        ]
+      })
+
   ]
 }
 
