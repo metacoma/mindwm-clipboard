@@ -35,19 +35,19 @@ while clipnotify -s ${notify_selection}; do
       continue
     }
 
-    xclip -selection ${xclip_selection} -o | tee | bin/filter.sh | tee ${tmpdir}/clipboard.txt > /tmp/clipboard.txt
+    (xclip -selection ${xclip_selection} -o | tee | bin/filter.sh; echo )| tee ${tmpdir}/clipboard.txt > /tmp/clipboard.txt
 
     rm input.yaml
     cat /tmp/clipboard.txt | ./run_scripts.sh handlers ${tmpdir}
-    cat ${tmpdir}/*.yaml | tee input.yaml
+    cat ${tmpdir}/*.yaml > input.yaml
     if [ -s input.yaml ]; then
       kcl run ./menu.k --format json > menus.json || continue
       CHECKSUM_FILE="/tmp/kando_menu.$(md5sum ./menus.json | cut -d" " -f1)"
       export CHECKSUM_FILE
       cp ./menus.json ${CHECKSUM_FILE}
-      mv menus.json ~/.config/kando/menus.json
+      pkill -9 -f kando
+      cp menus.json ~/.config/kando/menus.json
       kando -m root &
       cat ${CHECKSUM_FILE} | ./run_scripts.sh posthooks ${tmpdir}
-
     fi
 done
