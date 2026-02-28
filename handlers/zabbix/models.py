@@ -290,7 +290,8 @@ class ZbxHostFirewall(ZbxHost):
                 "util": self.getSerializedItemByKey("fortinetCurrentRAMUtil") | {"graphId": get_graph_id_by_itemid(self.getSerializedItemByKey("fortinetCurrentRAMUtil")["itemid"]) },
             },
             "networkInterface": [],
-            "disk": []
+            "disk": [],
+            "fs": []
         }
 
 
