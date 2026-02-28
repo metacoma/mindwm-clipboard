@@ -341,6 +341,21 @@ class ZbxHostWindows(ZbxHost):
 
         return disk
 
+    def getFilesystem(self) -> List:
+        fs = []
+        for item in self.items:
+            if item.name.endswith("Space utilization"):
+                fsName = re.search(r'^Windows\(([^\)]+)\): Space utilization', item.name)
+                if fsName:
+                    fsName = fsName.group(1)
+                    util = f"{float(item.lastvalue):.2f}%"
+                    fs.append({
+                        "name": fsName,
+                        "util": util,
+                        "icon": generate_kando_icon(util)
+                    })
+        return fs
+
     @model_serializer(mode="wrap")
     def _serialize(self, serializer):
         base: Dict[str, Any] = serializer(self)
@@ -365,7 +380,8 @@ class ZbxHostWindows(ZbxHost):
                 "util": self.getSerializedItemByKey("vm.memory.util"),
             },
             "networkInterface": self.getNetworkInterface(),
-            "disk": self.getDisk()
+            "disk": self.getDisk(),
+            "fs": self.getFilesystem()
         }
 
 @ZbxHost.register
