@@ -259,10 +259,3 @@ kando.Config {
       }
     ]
 }
-
-
-
-#mindmap.p(t)
-
-#n = mindmap.make(_all_objects["mindmap"][0], _all_objects)
-#m = mindmap.makeMenu(n)
