@@ -44,6 +44,11 @@ makeMenu = lambda user : any -> kando.Child {
         name = "Profile"
         url = user.jiraProfile
       })
+      utils.makeInsertAction({
+        name = "Slack"
+        icon = utils.makeIcon(images.SLACK)
+        text = "@" + user.name
+      })
     ] + [
       makeMenu(user_head)
       for user_head in user.head
