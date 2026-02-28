@@ -33,3 +33,14 @@ printf "%s\n" "$IPS" \
       ip="{}"
       echo {} | ${SCRIPT_DIR}/ip4.sh ${tmpdir} 'Ip {}' > ${tmpdir}/{}.yaml
     "
+HOST_NAMES=$(yq -r '
+  ..
+  | objects
+  | ( .hosts? // .["cmdb.host"]? )
+  | arrays
+  | .[]
+  | .name? // empty
+' ${tmpdir}/cmdb_output.txt
+)
+
+echo ${HOST_NAMES} | bash ${SCRIPT_DIR}/zabbix.sh ${tmpdir} > ${tmpdir}/monitoring.yaml
