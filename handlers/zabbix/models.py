@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field, computed_field, model_serializer
 
 import re
 import humanize
+import humanreadable as hr
 
 import logging
 from kando_icon import generate_kando_icon
@@ -294,7 +295,7 @@ class ZbxHostFirewall(ZbxHost):
             "disk": [],
             "fs": [],
             "container": [],
-            "postgres": []
+            "postgres": {}
         }
 
 
@@ -388,7 +389,7 @@ class ZbxHostWindows(ZbxHost):
             "disk": self.getDisk(),
             "fs": self.getFilesystem(),
             "container": [],
-            "postgres": [],
+            "postgres": {},
         }
 
 @ZbxHost.register
@@ -645,21 +646,4 @@ def get_host(hostname: str) -> Optional[ZbxHostLinux]:
     return hosts[0] if hosts else None
 
 def zabbixItemUptime(d : Dict):
-    return d | { "lastvalue" : seconds_to_uptime(d["lastvalue"]) }
-    return d
-
-def seconds_to_uptime(seconds: int) -> str:
-    seconds = int(seconds)
-
-    days = seconds // 86400
-    seconds %= 86400
-
-    hours = seconds // 3600
-    seconds %= 3600
-
-    minutes = seconds // 60
-    seconds %= 60
-
-    if days > 0:
-        return f"{days}d {hours:02}:{minutes:02}:{seconds:02}"
-    return f"{hours:02}:{minutes:02}:{seconds:02}"
+    return d | { "lastvalue" : hr.Time(d["lastvalue"], default_unit=hr.Time.Unit.SECOND).to_humanreadable(style="short") }
