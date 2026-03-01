@@ -200,14 +200,19 @@ makeMenu = lambda host : any -> [kando.Child] {
             icon = utils.makeIcon(images.CONTAINER)
             children = [
               utils.makeCommand({
-                name = "Restart"
-                cmd = "restart"
-                icon = utils.makeIcon(images.RESTART)
-              })
-              utils.makeCommand({
                 name = "Exec"
                 cmd = "restart"
                 icon = utils.makeIcon(images.TERMINAL)
+              })
+              utils.makeCommand({
+                name = "Logs"
+                cmd = utils.runTerminal("ssh -t jumphost ssh -t ${hostIp} \"sudo docker logs -f ${container.name}\"")
+                icon = utils.makeIcon(images.LOG)
+              })
+              utils.makeCommand({
+                name = "Restart"
+                cmd = "restart"
+                icon = utils.makeIcon(images.RESTART)
               })
               utils.makeCommand({
                 name = "Kill"
