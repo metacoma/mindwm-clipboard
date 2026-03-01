@@ -55,8 +55,8 @@ schema ZabbixCert:
 
 schema ZabbixNginx:
   cert: [ZabbixCert] = []
-  cpu_util: str
-  mem_usage: str
+  cpu_util?: str
+  mem_usage?: str
 
 schema ZabbixHost:
   name: str
@@ -293,8 +293,14 @@ makeMenu = lambda host : any -> [kando.Child] {
         name = "Nginx"
         icon = utils.makeIcon(images.NGINX)
         children = [
-          zabbixGraphShow(zabbixHost.name, zabbixHost.nginx.mem_usage, "Nginx: Memory usage", utils.makeIcon(images.MEMORY))
-          zabbixGraphShow(zabbixHost.name, zabbixHost.nginx.cpu_util, "Nginx: CPU utilization", utils.makeIcon(images.CPU))
+          if zabbixHost.nginx.mem_usage:
+            zabbixGraphShow(zabbixHost.name, zabbixHost.nginx.mem_usage, "Nginx: Memory usage", utils.makeIcon(images.MEMORY))
+          if zabbixHost.nginx.cpu_util:
+            #zabbixGraphShow(zabbixHost.name, zabbixHost.nginx.cpu_util, "Nginx: CPU utilization", utils.makeIcon(images.CPU))
+            utils.showText({
+              text = zabbixHost.nginx.cpu_util
+              icon = utils.makeIcon(images.CPU)
+            })
         ] + [
           utils.makeSubmenu({
             name = cert.name

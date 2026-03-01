@@ -513,8 +513,8 @@ class ZbxHostLinux(ZbxHost):
         if (mem_usage):
             mem_usage = humanize.naturalsize(mem_usage, binary=True)
 
-        if (not cpu_util and not mem_usage):
-            return None
+        #if (not cpu_util and not mem_usage):
+        #    return None
 
         nginx = {
             "cert": [],
@@ -539,6 +539,8 @@ class ZbxHostLinux(ZbxHost):
                     "expires": unixtime_to_str(self.getItemValueByName(f"Cert [{certName}]: Expires on")),
                     "issuer": self.getItemValueByName(f"Cert [{certName}]: Issuer"),
                 })
+        if not len(nginx["cert"]) and not nginx["cpu_util"] and not nginx["mem_usage"]:
+            return None
 
         return nginx
 
