@@ -4,6 +4,8 @@ from __future__ import annotations
 import os
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Type, Sequence, ClassVar
+from zoneinfo import ZoneInfo
+
 
 import pyzabbix
 from pydantic import BaseModel, Field, computed_field, model_serializer
@@ -295,7 +297,8 @@ class ZbxHostFirewall(ZbxHost):
             "disk": [],
             "fs": [],
             "container": [],
-            "postgres": {}
+            "postgres": {},
+            "nginx": {}
         }
 
 
@@ -390,6 +393,7 @@ class ZbxHostWindows(ZbxHost):
             "fs": self.getFilesystem(),
             "container": [],
             "postgres": {},
+            "nginx": {}
         }
 
 @ZbxHost.register
@@ -499,6 +503,45 @@ class ZbxHostLinux(ZbxHost):
 
         return postgres
 
+    def getNginx(self) -> Dict|None:
+        cpu_util = self.getItemValueByName(f"Nginx: CPU utilization")
+        mem_usage = self.getItemValueByName(f"Nginx: Memory usage (rss)")
+
+        if (cpu_util):
+            cpu_util = percent_pretty_print(cpu_util)
+
+        if (mem_usage):
+            mem_usage = humanize.naturalsize(mem_usage, binary=True)
+
+        if (not cpu_util and not mem_usage):
+            return None
+
+        nginx = {
+            "cert": [],
+            "cpu_util": cpu_util,
+            "mem_usage": mem_usage
+        }
+
+        for item in self.items:
+            if item.name.startswith("Cert Get for [ "):
+                certName = re.search(r'^Cert Get for \[ (.*) \]', item.name)
+                if certName:
+                    certName = certName.group(1)
+                else:
+                    continue
+                nginx["cert"].append({
+                    "name": certName,
+                    "valid": self.getItemValueByName(f"Cert [{certName}]: Validation result"),
+                    "subject": self.getItemValueByName(f"Cert [{certName}]: Subject")[3:],
+                    "fingerprint": self.getItemValueByName(f"Cert [{certName}]: Fingerprint SHA1"),
+                    "serial": self.getItemValueByName(f"Cert [{certName}]: Serial number"),
+                    "from": unixtime_to_str(self.getItemValueByName(f"Cert [{certName}]: Valid from")),
+                    "expires": unixtime_to_str(self.getItemValueByName(f"Cert [{certName}]: Expires on")),
+                    "issuer": self.getItemValueByName(f"Cert [{certName}]: Issuer"),
+                })
+
+        return nginx
+
     @model_serializer(mode="wrap")
     def _serialize(self, serializer):
         base: Dict[str, Any] = serializer(self)
@@ -526,7 +569,8 @@ class ZbxHostLinux(ZbxHost):
              "disk": self.getDisk(),
              "fs": self.getFilesystem(),
              "container": self.getContainer(),
-             "postgres": self.getPostgresDatabase()
+             "postgres": self.getPostgresDatabase(),
+             "nginx": self.getNginx()
         }
 
 
@@ -647,3 +691,41 @@ def get_host(hostname: str) -> Optional[ZbxHostLinux]:
 
 def zabbixItemUptime(d : Dict):
     return d | { "lastvalue" : hr.Time(d["lastvalue"], default_unit=hr.Time.Unit.SECOND).to_humanreadable(style="short") }
+
+
+def unixtime_to_str(
+    ts: int | float | str,
+    fmt: str = "%Y-%m-%d %H:%M:%S",
+    tz: str = "UTC",
+) -> str:
+
+    if ts is None:
+        return ""
+
+    try:
+        ts = float(ts)
+    except (TypeError, ValueError):
+        raise ValueError(f"Invalid unix timestamp: {ts}")
+
+    # detect milliseconds
+    if ts > 1e12:
+        ts /= 1000.0
+
+    dt = datetime.fromtimestamp(ts, ZoneInfo(tz))
+    return dt.strftime(fmt)
+
+def percent_pretty_print(value: float | int | str, decimals: int = 2) -> str:
+
+    if value is None:
+        return "0%"
+
+    try:
+        num = float(value)
+    except (TypeError, ValueError):
+        raise ValueError(f"Invalid percent value: {value}")
+
+    # If looks like fraction (0..1), convert to percent
+    if 0 <= num <= 1:
+        num *= 100
+
+    return f"{num:.{decimals}f}%"

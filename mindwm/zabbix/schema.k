@@ -43,6 +43,21 @@ schema ZabbixPostgres:
   replication?: str
   database?: [ZabbixPostgresDb]
 
+schema ZabbixCert:
+  name: str
+  valid: str
+  subject: str
+  fingerprint: str
+  serial: str
+  from: str
+  expires: str
+  issuer: str
+
+schema ZabbixNginx:
+  cert: [ZabbixCert] = []
+  cpu_util: str
+  mem_usage: str
+
 schema ZabbixHost:
   name: str
   url: str
@@ -64,6 +79,7 @@ schema ZabbixHost:
   filesystem: [ZabbixFilesystem]
   container: [ZabbixContainer]
   postgres: ZabbixPostgres
+  nginx?: ZabbixNginx = None
 
 schema ZabbixHostLinux(ZabbixHost):
 schema ZabbixHostWindows(ZabbixHost):
@@ -127,8 +143,25 @@ makeHost = lambda obj: any, all_objects: any -> ZabbixHost {
         ]
       if obj.postgres.replication:
         replication = obj.postgres.replication
-
     }
+    if obj.nginx:
+      nginx = ZabbixNginx {
+        cpu_util = obj.nginx.cpu_util
+        mem_usage = obj.nginx.mem_usage
+        cert = [
+          ZabbixCert {
+            name = c.name
+            valid = c.valid
+            subject = c.subject
+            fingerprint = c.fingerprint
+            from = c.from
+            expires = c.expires
+            issuer = c.issuer
+            serial = c.serial
+          }
+          for c in obj.nginx.cert
+        ]
+      }
   }
 }
 
@@ -253,6 +286,44 @@ makeMenu = lambda host : any -> [kando.Child] {
             ]
           })
           for db in zabbixHost.postgres.database
+        ]
+      })
+    if zabbixHost.nginx:
+      utils.makeSubmenu({
+        name = "Nginx"
+        icon = utils.makeIcon(images.NGINX)
+        children = [
+          zabbixGraphShow(zabbixHost.name, zabbixHost.nginx.mem_usage, "Nginx: Memory usage", utils.makeIcon(images.MEMORY))
+          zabbixGraphShow(zabbixHost.name, zabbixHost.nginx.cpu_util, "Nginx: CPU utilization", utils.makeIcon(images.CPU))
+        ] + [
+          utils.makeSubmenu({
+            name = cert.name
+            icon = utils.makeIcon(images.SSL)
+            children = [
+              utils.showText({
+                text = cert.subject
+                icon = utils.makeIcon(images.SSL_SUBJECT)
+              })
+              utils.showText({
+                text = cert.expires
+                icon = utils.makeIcon(images.EXPIRED)
+              })
+              utils.showText({
+                text = cert.issuer
+                icon = utils.makeIcon(images.ISSUER)
+              })
+              utils.showText({
+                text = cert.valid
+                if cert.valid == "valid":
+                  icon = "✅"
+                elif cert.valid == "valid-but-self-signed":
+                  icon = "✍️"
+                else:
+                  icon = "❌"
+              })
+            ]
+          })
+          for cert in zabbixHost.nginx.cert
         ]
       })
 
