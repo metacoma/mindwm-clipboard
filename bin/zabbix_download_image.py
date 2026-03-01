@@ -117,7 +117,7 @@ def find_graph_id(session, zabbix_url, token, host_id, graph_name):
         {"hostids": [host_id], "output": ["graphid", "name"]},
         "3",
     )
-    #eprint(data.get("result"))
+    eprint(data.get("result"))
     for g in data.get("result", []):
         if g.get("name") == graph_name:
             return g.get("graphid")
