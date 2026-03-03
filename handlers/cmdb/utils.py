@@ -9,8 +9,8 @@ from pathlib import Path
 from urllib.parse import urlparse
 from html import unescape
 
-jira_url = os.getenv('jira_url')
-jira_pat = os.getenv('jira_pat')
+jira_url = os.getenv('JIRA_URL')
+jira_pat = os.getenv('JIRA_TOKEN')
 cmdb_id = os.getenv('CMDB_ID')
 from typing import Any, List, Optional, Dict
 

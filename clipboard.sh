@@ -3,8 +3,7 @@ set -x
 
 PATH=${PATH}:~/bin:$(pwd)/bin
 
-export CLIPBOARD_ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-
+. ./.env
 . handlers/utils.sh
 
 case $1 in
