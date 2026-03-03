@@ -21,7 +21,7 @@
           packages = [ ];
           buildInputs = with pkgs; [
             kando eww
-            ipcalc dnsutils libmaxminddb
+            ipcalc dnsutils libmaxminddb grpcurl
             jq yq xq
             freeplane
             twitch-dl
