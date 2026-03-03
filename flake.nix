@@ -31,6 +31,17 @@
               protobuf
               pydantic
               pyyaml
+colorama
+python-dotenv
+grpcio
+humanize
+human-readable
+pillow
+protobuf
+pydantic
+pyyaml
+pyzabbix
+requests
           ]);
           shellHook = ''
             export GEOIP_DB="${geoip}"
