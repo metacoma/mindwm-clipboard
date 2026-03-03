@@ -8,7 +8,7 @@ import requests
 
 OUTFILE = os.environ.get("OUTFILE", "names.txt")
 
-jira_url = os.getenv('JIRA_URL')
+jira_url = "https://" + os.getenv('JIRA_HOST')
 jira_pat = os.getenv('JIRA_TOKEN')
 cmdb_id = os.getenv('CMDB_ID')
 

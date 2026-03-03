@@ -2,7 +2,7 @@
 
 export SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/utils.sh"
-source ${SCRIPT_DIR}/cmdb/.venv/bin/activate
+#source ${SCRIPT_DIR}/cmdb/.venv/bin/activate
 
 cmdb_keywords() {
   sed 's/\?//g' |
