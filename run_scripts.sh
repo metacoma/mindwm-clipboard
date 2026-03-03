@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 script_dir=$1
 tmpdir=$2
 export tmpdir
