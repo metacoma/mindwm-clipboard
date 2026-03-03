@@ -5,6 +5,12 @@ import base64
 import kando.images as images
 import regex
 
+root_dir = file.read_env("CLIPBOARD_ROOT_DIR")
+
+files = {
+  "zabbix_show_image_cmd" = "${root_dir}/bin/zabbix_show_image.sh"
+}
+
 schema SubMenuArgs:
   name: str
   icon?: str = "🕸️"

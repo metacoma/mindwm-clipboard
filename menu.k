@@ -21,7 +21,6 @@ import mindwm.cmdb.database as database
 import file
 import yaml
 
-
 _all_objects = yaml.decode(file.read("./input.yaml"))
 
 object_by_type = lambda t : str, obj: any -> any {

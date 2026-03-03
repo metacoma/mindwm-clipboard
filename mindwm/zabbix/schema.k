@@ -3,7 +3,6 @@ import kando.utils as utils
 import kando.schema as kando
 import regex
 
-
 schema ZabbixItem:
   name: str
   itemid: str
@@ -374,7 +373,6 @@ makeMenu = lambda host : any -> [kando.Child] {
   ]
 }
 
-zabbix_show_image_cmd = "/home/bebebeka/spaces/mindwm/clipboard/bin/zabbix_show_image.sh"
 
 zabbixItemGraphShow = lambda host : ZabbixHost, item : ZabbixItem, graph_name : str, icon : str  -> kando.Child {
   value = item.lastvalue
@@ -389,7 +387,7 @@ zabbixItemGraphShow = lambda host : ZabbixHost, item : ZabbixItem, graph_name : 
     show_image_args = "${host.name} '${item.graphId}'"
   utils.makeCommand({
     name = value
-    "cmd" = zabbix_show_image_cmd + " " + show_image_args
+    "cmd" = "${utils.files['zabbix_show_image_cmd']} ${show_image_args}"
     icon = icon
   })
 }
@@ -400,7 +398,7 @@ zabbixGraphShow = lambda host_name : str, value : str, graph_name : str, icon : 
 
   utils.makeCommand({
     name = value
-    "cmd" = zabbix_show_image_cmd + " " + show_image_args
+    "cmd" = "${utils.files['zabbix_show_image_cmd']} ${show_image_args}"
     icon = icon
   })
 }
