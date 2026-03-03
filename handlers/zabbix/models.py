@@ -518,6 +518,7 @@ class ZbxHostLinux(ZbxHost):
 
         nginx = {
             "cert": [],
+            "site": [],
             "cpu_util": cpu_util,
             "mem_usage": mem_usage
         }
@@ -538,6 +539,11 @@ class ZbxHostLinux(ZbxHost):
                     "from": unixtime_to_str(self.getItemValueByName(f"Cert [{certName}]: Valid from")),
                     "expires": unixtime_to_str(self.getItemValueByName(f"Cert [{certName}]: Expires on")),
                     "issuer": self.getItemValueByName(f"Cert [{certName}]: Issuer"),
+                })
+            if (domain := re.search(r"Nginx: HTTP server zone \[(.*)\]: Processing", item.name)):
+                domainName = domain.group(1)
+                nginx["site"].append({
+                    "name": domainName
                 })
         if not len(nginx["cert"]) and not nginx["cpu_util"] and not nginx["mem_usage"]:
             return None

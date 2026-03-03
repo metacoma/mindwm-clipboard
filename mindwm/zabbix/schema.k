@@ -53,8 +53,17 @@ schema ZabbixCert:
   expires: str
   issuer: str
 
+schema NginxUpstream:
+  name: str
+
+schema ZabbixNginxSite:
+  name: str
+  upstream: [NginxUpstream] = []
+
+
 schema ZabbixNginx:
   cert: [ZabbixCert] = []
+  site: [ZabbixNginxSite] = []
   cpu_util?: str
   mem_usage?: str
 
@@ -160,6 +169,19 @@ makeHost = lambda obj: any, all_objects: any -> ZabbixHost {
             serial = c.serial
           }
           for c in obj.nginx.cert
+        ]
+        site = [
+          ZabbixNginxSite {
+            name = s.name
+            if "site ${s.name}" in all_objects:
+              upstream = [
+                NginxUpstream {
+                  name = u.name
+                }
+                for u in all_objects["site ${s.name}"].upstream
+              ]
+          }
+          for s in obj.nginx.site
         ]
       }
   }
@@ -330,6 +352,20 @@ makeMenu = lambda host : any -> [kando.Child] {
             ]
           })
           for cert in zabbixHost.nginx.cert
+        ] + [
+          utils.makeSubmenu({
+            name = site.name
+            icon = utils.makeIcon(images.SITE)
+            children = [
+              utils.makeCommand({
+                name = upstream.name
+                cmd = "echo ${upstream.name} | cut -d: -f1 | xclip -i -selection primary"
+                icon = utils.makeIcon(images.NGINX_UPSTREAM)
+              })
+              for upstream in site.upstream
+            ]
+          })
+          for site in zabbixHost.nginx.site
         ]
       })
 

@@ -44,3 +44,13 @@ HOST_NAMES=$(yq -r '
 )
 
 echo ${HOST_NAMES} | bash ${SCRIPT_DIR}/zabbix.sh ${tmpdir} > ${tmpdir}/monitoring.yaml
+
+SITES=$(yq -r '.monitoring.hosts[]?
+       | .nginx?
+       | .site[]?
+       | .name? // empty' ${tmpdir}/monitoring.yaml)
+
+echo ${SITES} > ${tmpdir}/sites.txt
+printf '%s\n' $SITES | xargs -P0 -I{} sh -c "
+  bash ${SCRIPT_DIR}/find_upstream.sh {} > ${tmpdir}/upstream_{}.yaml
+"
