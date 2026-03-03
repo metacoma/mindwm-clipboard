@@ -3,12 +3,14 @@ set -x
 
 PATH=${PATH}:~/bin:$(pwd)/bin
 
+export CLIPBOARD_ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+
 . handlers/utils.sh
 
 case $1 in
     clipboard)
         notify_selection=clipboard
-        xclip_selection=primary
+        xclip_selection=clipboard
     ;;
     qt)
         notify_selection=clipboard
