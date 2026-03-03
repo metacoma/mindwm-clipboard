@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import math
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Type, Sequence, ClassVar
 from zoneinfo import ZoneInfo
@@ -12,7 +13,6 @@ from pydantic import BaseModel, Field, computed_field, model_serializer
 
 import re
 import humanize
-import humanreadable as hr
 
 import logging
 from kando_icon import generate_kando_icon
@@ -698,7 +698,7 @@ def get_host(hostname: str) -> Optional[ZbxHostLinux]:
     return hosts[0] if hosts else None
 
 def zabbixItemUptime(d : Dict):
-    return d | { "lastvalue" : hr.Time(d["lastvalue"], default_unit=hr.Time.Unit.SECOND).to_humanreadable(style="short") }
+    return d | { "lastvalue" : human_unixtime(int(d["lastvalue"])) }
 
 
 def unixtime_to_str(
@@ -737,3 +737,14 @@ def percent_pretty_print(value: float | int | str, decimals: int = 2) -> str:
         num *= 100
 
     return f"{num:.{decimals}f}%"
+
+def human_unixtime(t):
+  d = [(24*60*60,'d'), (60*60,'h'), (60,'m'), (1,'s')]
+  rest = t
+  res = []
+  for (x,desc) in d:
+    a = math.floor(rest / x)
+    res.append((a,desc))
+    rest = rest - (a*x)
+
+  return ' '.join([f"{n}{d}" for (n,d) in res if n > 0])
