@@ -8,7 +8,7 @@ PATH=${PATH}:~/bin:$(pwd)/bin
 case $1 in
     clipboard)
         notify_selection=clipboard
-        xclip_selection=primary
+        xclip_selection=clipboard
     ;;
     qt)
         notify_selection=clipboard

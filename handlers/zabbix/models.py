@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field, computed_field, model_serializer
 
 import re
 import humanize
-import humanreadable as hr
+import human_readable as hr
 
 import logging
 from kando_icon import generate_kando_icon
@@ -698,7 +698,8 @@ def get_host(hostname: str) -> Optional[ZbxHostLinux]:
     return hosts[0] if hosts else None
 
 def zabbixItemUptime(d : Dict):
-    return d | { "lastvalue" : hr.Time(d["lastvalue"], default_unit=hr.Time.Unit.SECOND).to_humanreadable(style="short") }
+    #return d | { "lastvalue" : hr.Time(d["lastvalue"], default_unit=hr.Time.Unit.SECOND).to_humanreadable(style="short") }
+    return d
 
 
 def unixtime_to_str(

@@ -261,7 +261,7 @@ makeMenu = lambda host : any -> [kando.Child] {
               })
               utils.makeCommand({
                 name = "Logs"
-                cmd = utils.runTerminal("ssh -t jumphost ssh -t ${hostIp} \"sudo docker logs -f ${container.name}\"")
+                cmd = utils.runTerminal("ssh -A -t stc-wp-dba ssh -t ${hostIp} \"sudo docker logs -f ${container.name}\"")
                 icon = utils.makeIcon(images.LOG)
               })
               utils.makeCommand({
@@ -290,7 +290,7 @@ makeMenu = lambda host : any -> [kando.Child] {
           if (zabbixHost.postgres.replication):
             utils.makeCommand({
               name = zabbixHost.postgres.replication
-              cmd = "echo ${zabbixHost.postgres.replication} | xclip -i -selection primary"
+              cmd = "echo ${zabbixHost.postgres.replication} | xclip -i -selection clipboard"
               icon = utils.makeIcon(images.DATABASE_MASTER)
             })
         ] + [
@@ -301,7 +301,7 @@ makeMenu = lambda host : any -> [kando.Child] {
               if hostIp:
                 utils.makeCommand({
                   name = "Exec"
-                  cmd = utils.runTerminal("ssh -t jumphost ssh -t ${hostIp} \"sudo -u postgres psql ${db.name}\"")
+                  cmd = utils.runTerminal("ssh -A -t stc-wp-dba ssh -t ${hostIp} \"sudo -u postgres psql ${db.name}\"")
                   icon = utils.makeIcon(images.TERMINAL)
                 })
               zabbixGraphShow(zabbixHost.name, db.size, "DB ${db.name}: Size", utils.makeIcon(images.SIZE))
@@ -359,7 +359,7 @@ makeMenu = lambda host : any -> [kando.Child] {
             children = [
               utils.makeCommand({
                 name = upstream.name
-                cmd = "echo ${upstream.name} | cut -d: -f1 | xclip -i -selection primary"
+                cmd = "echo ${upstream.name} | cut -d: -f1 | xclip -i -selection clipboard"
                 icon = utils.makeIcon(images.NGINX_UPSTREAM)
               })
               for upstream in site.upstream
@@ -374,7 +374,7 @@ makeMenu = lambda host : any -> [kando.Child] {
   ]
 }
 
-zabbix_show_image_cmd = "/home/bebebeka/spaces/mindwm/clipboard/bin/zabbix_show_image.sh"
+zabbix_show_image_cmd = "/home/pion/work/dev/mindwm/mindwm-clipboard/bin/zabbix_show_image.sh"
 
 zabbixItemGraphShow = lambda host : ZabbixHost, item : ZabbixItem, graph_name : str, icon : str  -> kando.Child {
   value = item.lastvalue
