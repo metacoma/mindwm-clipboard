@@ -9,6 +9,7 @@ root_dir = file.read_env("CLIPBOARD_ROOT_DIR")
 
 files = {
   "zabbix_show_image_cmd" = "${root_dir}/bin/zabbix_show_image.sh"
+  "copy_action" = "${root_dir}/bin/copy_action.sh"
 }
 
 schema SubMenuArgs:
@@ -41,7 +42,7 @@ makeCommand = lambda args : any -> kando.Command {
 makeCopyAction = lambda text : str -> kando.Command {
   makeCommand({
     name = "Copy"
-    cmd = "echo ${text} | /home/bebebeka/spaces/mindwm/clipboard/bin/copy_action.sh"
+    cmd = "echo ${text} | ${files['copy_action']}"
     icon = "📋"
   })
 }
