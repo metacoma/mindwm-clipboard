@@ -27,12 +27,12 @@ keywords="$(cmdb_keywords)"
 test -n "${keywords}" || exit 0
 python3 ${SCRIPT_DIR}/cmdb/cmdb.py ${keywords} | tee ${tmpdir}/cmdb_output.txt
 
-IPS=$(yq '.. | scalars' ${tmpdir}/cmdb_output.txt | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | sort -u)
-printf "%s\n" "$IPS" \
-  | xargs -P 8 -I{} bash -c "
-      ip="{}"
-      echo {} | ${SCRIPT_DIR}/ip4.sh ${tmpdir} 'Ip {}' > ${tmpdir}/{}.yaml
-    "
+#IPS=$(yq '.. | scalars' ${tmpdir}/cmdb_output.txt | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | sort -u)
+#printf "%s\n" "$IPS" \
+#  | xargs -P 8 -I{} bash -c "
+#      ip="{}"
+#      echo {} | ${SCRIPT_DIR}/ip4.sh ${tmpdir} 'Ip {}' > ${tmpdir}/{}.yaml
+#    "
 HOST_NAMES=$(yq -r '
   ..
   | objects

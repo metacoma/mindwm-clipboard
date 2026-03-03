@@ -210,7 +210,6 @@ child = lambda obj : any -> kando.Child {
 
 
 
-
 kando.Config {
     menus = [
       kando.Menu {

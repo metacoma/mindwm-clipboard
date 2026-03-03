@@ -26,6 +26,7 @@
             freeplane
             twitch-dl
             xclip clipnotify
+            kcl
           ] ++ (with pkgs.python3.pkgs; [
               grpcio
               protobuf
