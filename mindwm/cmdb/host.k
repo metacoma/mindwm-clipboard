@@ -52,6 +52,9 @@ make = lambda obj: any, all_objects : any -> Host {
 }
 
 makeMenu = lambda host : any -> kando.Child {
+  zabbix_menu = []
+  if host.zabbixHost:
+    zabbix_menu = zabbix.makeMenu(host)
   kando.Child {
     name = host.name
     icon = utils.operatingSystemIcon(host.os)
@@ -105,7 +108,7 @@ makeMenu = lambda host : any -> kando.Child {
           children = team.makeMenu(host_team).children
         })
         for host_team in host.team
-    ] + zabbix.makeMenu(host)
+    ] + zabbix_menu
 
   }
 }
